@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Вход — PriceWatch{% endblock %}
+{% block body_class %}login-page{% endblock %}
+
+{% block content %}
+  <div class="container page-container login-layout">
+    <section class="login-intro" aria-labelledby="intro-title">
+      <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>Ваш рабочий кабинет</p>
+      <h1 id="intro-title">У каждой цены<br>есть история.</h1>
+      <p class="intro-description">PriceWatch — пространство для наблюдения за ценами и изменениями на сайтах.</p>
+      <div class="intro-note">
+        <span class="intro-note-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="10" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div>
+          <p class="intro-note-title">Доступ для вашей команды</p>
+          <p>Учётные записи создаёт администратор проекта.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="login-card" aria-labelledby="login-title">
+      <div class="login-card-heading">
+        <p class="eyebrow">С возвращением</p>
+        <h2 id="login-title">Войти в PriceWatch</h2>
+        <p>Используйте свою учётную запись.</p>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger login-error" id="login-error" role="alert">
+          Не удалось войти. Проверьте имя пользователя и пароль.
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'accounts:login' %}" class="login-form"{% if form.non_field_errors %} aria-describedby="login-error"{% endif %}>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="login-field">
+          <label class="form-label" for="{{ form.username.id_for_label }}">Имя пользователя</label>
+          <input type="text" class="form-control{% if form.username.errors %} is-invalid{% endif %}" id="{{ form.username.id_for_label }}" name="{{ form.username.html_name }}" value="{{ form.username.value|default_if_none:'' }}" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="{{ form.username.field.max_length|default:150 }}" required autofocus aria-describedby="username-help{% if form.username.errors %} username-errors{% endif %}"{% if form.username.errors %} aria-invalid="true"{% endif %}>
+          <div class="form-text" id="username-help">Имя, выданное администратором.</div>
+          {% if form.username.errors %}
+            <div class="invalid-feedback" id="username-errors">
+              {% for error in form.username.errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="login-field">
+          <label class="form-label" for="{{ form.password.id_for_label }}">Пароль</label>
+          <input type="password" class="form-control{% if form.password.errors %} is-invalid{% endif %}" id="{{ form.password.id_for_label }}" name="{{ form.password.html_name }}" autocomplete="current-password" required{% if form.password.errors %} aria-invalid="true" aria-describedby="password-errors"{% endif %}>
+          {% if form.password.errors %}
+            <div class="invalid-feedback" id="password-errors">
+              {% for error in form.password.errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <button class="btn btn-primary login-submit" type="submit">Войти в кабинет <span aria-hidden="true">→</span></button>
+      </form>
+      <p class="login-help">Нет доступа или забыли пароль?<br>Обратитесь к администратору проекта.</p>
+    </section>
+  </div>
+{% endblock %}

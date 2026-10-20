@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+addopts = "--strict-markers --strict-config"
+markers = ["integration: opt-in real Redis/Celery/HTTP fixture checks in Docker"]
+filterwarnings = ["error::DeprecationWarning:apps.*"]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true

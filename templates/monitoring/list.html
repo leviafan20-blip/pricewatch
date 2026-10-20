@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load monitoring %}
+{% block title %}Мои мониторинги — PriceWatch{% endblock %}
+{% block content %}
+<div class="container page-container dashboard-layout">
+  <div class="dashboard-heading">
+    <div><p class="eyebrow">Рабочее пространство</p><h1>Мои мониторинги</h1><p class="page-description">Проверяйте товары и сохраняйте историю цен.</p></div>
+    <a class="btn btn-primary" href="{% url 'monitoring:create' %}">Добавить товар <span aria-hidden="true">+</span></a>
+  </div>
+  <nav class="monitor-tabs" aria-label="Состояние мониторингов">
+    <a href="{% url 'monitoring:list' %}" {% if not archived %}aria-current="page"{% endif %}>Активные</a>
+    <a href="{% url 'monitoring:list' %}?state=archived" {% if archived %}aria-current="page"{% endif %}>Архив</a>
+  </nav>
+  <form method="get" action="{% url 'monitoring:compare' %}">
+  <section class="workspace-card" aria-label="Список товаров">
+    {% if page_obj %}
+    <div class="table-responsive">
+      <table class="table monitor-table mb-0">
+        <thead><tr><th scope="col">Выбор</th><th scope="col">Товар</th><th scope="col">Последняя известная цена</th><th scope="col">Последняя проверка</th><th scope="col">Расписание</th></tr></thead>
+        <tbody>{% for monitor in page_obj %}<tr>
+          <td><input class="form-check-input" type="checkbox" name="monitor" value="{{ monitor.pk }}" aria-label="Сравнить {{ monitor.name }}"></td>
+          <td><a class="monitor-name" href="{% url 'monitoring:detail' monitor.pk %}">{{ monitor.name }}</a><span class="monitor-subline">Добавлен {{ monitor.created_at|date:"d.m.Y" }}</span></td>
+          <td class="price-cell">{{ monitor.last_price|amount }}{% if monitor.last_currency %} <span class="currency-label">{{ monitor.last_currency }}</span>{% endif %}</td>
+          <td>{% include 'monitoring/_status.html' with status=monitor.last_check_status %}{% if monitor.last_check_at %}<span class="monitor-subline">{{ monitor.last_check_at|date:"d.m.Y H:i" }}</span>{% endif %}</td>
+          <td><span class="monitor-subline">{% if monitor.archived_at %}Архив{% elif monitor.auto_enabled %}{{ monitor.get_check_interval_hours_display }}<br>Далее {{ monitor.next_check_at|date:'d.m.Y H:i' }}{% else %}Выключено{% endif %}</span></td>
+        </tr>{% endfor %}</tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="workspace-empty"><div class="empty-symbol" aria-hidden="true">{% if archived %}↳{% else %}+{% endif %}</div>
+      <p class="empty-kicker">{% if archived %}История остаётся с вами{% else %}Первое наблюдение{% endif %}</p>
+      <h2>{% if archived %}В архиве пока пусто{% else %}Добавьте первый товар{% endif %}</h2>
+      <p class="empty-description">{% if archived %}Архивные мониторинги сохраняют результаты и доступны для просмотра.{% else %}Сохраните ссылку на товар поддерживаемого сайта, затем включите расписание или запустите проверку вручную.{% endif %}</p>
+    </div>{% endif %}
+  </section>
+  {% if page_obj %}<div class="comparison-actions"><button class="btn btn-outline-secondary" type="submit">Сравнить выбранные</button><span class="form-text">Выберите 2–5 товаров на этой странице. Сравниваются цены в одной валюте.</span></div>{% endif %}
+  </form>
+  {% include 'monitoring/_pagination.html' %}
+  <p class="dashboard-footnote">Цена относится к последней успешной проверке. Ошибки загрузки не удаляют предыдущие данные.</p>
+</div>
+{% endblock %}

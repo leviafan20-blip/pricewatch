@@ -1,0 +1,41 @@
+{% load monitoring tz %}
+<section class="workspace-card analytics-card" aria-labelledby="analytics-title">
+  <div class="workspace-card-header"><h2 id="analytics-title">{% if selected_monitors %}Сравнение цен{% else %}История цен{% endif %}</h2><span class="analytics-caption">{% get_current_timezone as zone %}{{ zone }}</span></div>
+  <div class="analytics-body">
+    <form method="get" class="history-filters">
+      {% for selected in selected_monitors %}<input type="hidden" name="monitor" value="{{ selected.pk }}">{% endfor %}
+      {% for field in history_form %}<div><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="text-danger small" role="alert">{{ error }}</p>{% endfor %}</div>{% endfor %}
+      <button class="btn btn-primary" type="submit">Применить</button>
+    </form>
+    <p class="form-text">Даты включительно, в указанном часовом поясе; они уточняют выбранный период. Для произвольных дат выберите «Всё время».</p>
+    {% for error in history_form.non_field_errors %}<div class="alert alert-warning" role="alert">{{ error }}</div>{% endfor %}
+    {% if not history_form.errors %}
+      {% if has_prices %}
+        <div class="price-chart-wrap"><canvas id="price-chart" role="img" aria-label="График истории цен в {{ currency }}. Точные значения представлены в статистике и таблице ниже."></canvas></div>
+        <p id="chart-status" class="form-text" role="status">Наведите указатель на точку, чтобы увидеть дату и цену. Нажатие на название в легенде скрывает ряд.</p>
+        <noscript><p class="alert alert-info">Для графика нужен JavaScript. Статистика и таблица доступны без него.</p></noscript>
+      {% else %}<div class="analytics-empty"><span class="empty-symbol" aria-hidden="true">↗</span><h3>За этот период цен пока нет</h3><p>Выберите другой период или дождитесь успешной проверки с ценой. Отсутствие товара без цены не считается нулевой ценой.</p></div>{% endif %}
+      {% for analysis in analyses %}
+        {% if selected_monitors %}<h3 class="comparison-name"><a href="{% url 'monitoring:detail' analysis.monitor.pk %}">{{ analysis.monitor.name }}</a></h3>{% endif %}
+        {% with stats=analysis.statistics %}
+        <div class="analytics-stats">
+          <div><span>Минимальная</span><strong>{{ stats.minimum|amount }} <small>{{ analysis.currency }}</small></strong></div>
+          <div><span>Максимальная</span><strong>{{ stats.maximum|amount }} <small>{{ analysis.currency }}</small></strong></div>
+          <div><span>Средняя по наблюдениям</span><strong>{{ stats.average|percent_amount }} <small>{{ analysis.currency }}</small></strong><span>Округлена до 2 знаков для отображения</span></div>
+          <div><span>Последняя в периоде</span><strong>{{ stats.latest.price|amount }} <small>{{ analysis.currency }}</small></strong>{% if stats.latest %}<span>{{ stats.latest.observed_at|date:'d.m.Y H:i:s' }}</span>{% endif %}</div>
+        </div>
+        {% if stats.count %}
+          <div class="price-change {% if stats.change < 0 %}price-down{% elif stats.change > 0 %}price-up{% endif %}">
+            <strong>{% if stats.change > 0 %}+{% endif %}{{ stats.change|amount }} {{ analysis.currency }}</strong>
+            <span> / {% if stats.percent != None %}{% if stats.percent > 0 %}+{% endif %}{{ stats.percent|percent_amount }} %{% else %}процент не определён: начальная цена равна нулю{% endif %}</span>
+            <p>От {{ stats.first.price|amount }} {{ analysis.currency }} ({{ stats.first.observed_at|date:'d.m.Y H:i:s' }}) до {{ stats.latest.price|amount }} {{ analysis.currency }} ({{ stats.latest.observed_at|date:'d.m.Y H:i:s' }}). Валидных цен: {{ stats.count }}.</p>
+          </div>
+          {% if stats.count == 1 %}<p class="analytics-note">Единственное наблюдение: изменение равно нулю; динамику можно оценить после следующей проверки.</p>{% elif stats.unchanged %}<p class="analytics-note">Цена не менялась в выбранном периоде.</p>{% elif stats.change == 0 %}<p class="analytics-note">Первая и последняя цены совпадают, но внутри периода были изменения.</p>{% endif %}
+        {% endif %}
+        {% if analysis.sampled %}<p class="alert alert-info small">Показана выборка до 400 точек из {{ analysis.total }} наблюдений. Сохранены первая, последняя и крайние цены. Линия отключена, чтобы пропущенные наблюдения не скрывали разрывы. Статистика рассчитана по всей истории периода.</p>{% endif %}
+        {% endwith %}
+      {% endfor %}
+      <p class="analytics-note">График показывает измеренные цены, промежуточные значения неизвестны. Наблюдение без цены разрывает линию. Технические ошибки находятся в журнале проверок и не превращаются в цены. Денежные значения в графике округляются браузером; точные цены доступны в таблице.</p>
+    {% endif %}
+  </div>
+</section>

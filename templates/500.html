@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Не удалось загрузить страницу — PriceWatch{% endblock %}
+{% block content %}
+  <div class="container page-container error-layout">
+    <section class="error-card" aria-labelledby="error-title">
+      <p class="eyebrow">Ошибка 500</p>
+      <h1 id="error-title">Не удалось загрузить страницу</h1>
+      <p>На сервере произошла ошибка. Попробуйте открыть страницу позже. Если ошибка повторится, сообщите администратору.</p>
+      <a class="btn btn-primary" href="{% url 'core:dashboard' %}">Перейти в кабинет</a>
+    </section>
+  </div>
+{% endblock %}

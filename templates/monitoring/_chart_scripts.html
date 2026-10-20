@@ -1,0 +1,4 @@
+{% load static %}
+{{ chart_data|json_script:"price-chart-data" }}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}" defer></script>
+<script src="{% static 'js/price-history.js' %}" defer></script>

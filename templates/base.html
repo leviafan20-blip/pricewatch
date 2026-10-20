@@ -1,0 +1,69 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#142b45">
+    <title>{% block title %}PriceWatch{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  </head>
+  <body class="{% block body_class %}{% endblock %}">
+    <a class="skip-link" href="#main-content">Перейти к содержимому</a>
+    <header class="site-header">
+      <div class="container page-container header-inner">
+        <a class="brand" href="{% url 'core:dashboard' %}" aria-label="PriceWatch — главная">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="25" height="25" viewBox="0 0 25 25" fill="none">
+              <path d="M5 6.5V18h15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="m8 13 4-4 3.5 3L20 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16.5 6.5H20V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span>Price<span class="brand-accent">Watch</span></span>
+        </a>
+        {% if user.is_authenticated %}
+          <nav class="account-nav" aria-label="Аккаунт">
+            <a class="nav-text-link" href="{% url 'monitoring:list' %}">Мониторинги</a>
+            <a class="nav-text-link notification-nav" href="{% url 'notifications:list' %}">Уведомления <span class="notification-count" aria-label="Непрочитанных: {{ unread_notification_count }}">{{ unread_notification_count }}</span></a>
+            {% if user.is_staff %}
+              <a class="nav-text-link" href="{% url 'admin:index' %}">Администрирование</a>
+            {% endif %}
+            <span class="account-name" title="{{ user.get_username }}">
+              <span class="account-avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
+              <span class="account-name-text">{{ user.get_username }}</span>
+            </span>
+            <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+              {% csrf_token %}
+              <button class="btn btn-outline-secondary btn-logout" type="submit">Выйти</button>
+            </form>
+          </nav>
+        {% else %}
+          <span class="private-access"><span class="status-dot" aria-hidden="true"></span>Закрытый доступ</span>
+        {% endif %}
+      </div>
+    </header>
+
+    <main id="main-content" class="site-main" tabindex="-1">
+      {% if messages %}
+        <div class="container page-container messages-container" aria-live="polite">
+          {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="status">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="container page-container footer-inner">
+        <span>PriceWatch</span>
+        <span>Внимание к каждой цене.</span>
+      </div>
+    </footer>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

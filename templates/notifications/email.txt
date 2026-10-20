@@ -1,0 +1,14 @@
+{% load monitoring %}{% autoescape off %}PriceWatch — изменение цены
+
+{{ monitor.name }}
+Старая цена: {{ notice.previous_observation.price|amount }} {{ notice.observation.currency }}
+Новая цена: {{ notice.observation.price|amount }} {{ notice.observation.currency }}
+Изменение: {% if notice.change > 0 %}+{% endif %}{{ notice.change|amount }} {{ notice.observation.currency }}
+Процент: {% if notice.percent != None %}{% if notice.percent > 0 %}+{% endif %}{{ notice.percent|percent_amount }} %{% else %}не определён — начальная цена равна нулю{% endif %}
+Дата: {{ notice.created_at|date:'d.m.Y H:i:s' }}
+
+Открыть мониторинг: {{ link }}
+
+Вы получили это сообщение, потому что включили email-уведомления в PriceWatch.
+Настройки email доступны в разделе «Уведомления» вашего кабинета.
+{% endautoescape %}

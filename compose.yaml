@@ -1,0 +1,212 @@
+name: pricewatch
+
+x-django: &django
+  image: pricewatch-django:local
+  build:
+    context: .
+    target: development
+  environment: &django-environment
+    DJANGO_SETTINGS_MODULE: config.settings.local
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
+    DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,[::1]}
+    DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost:8000,http://127.0.0.1:8000}
+    POSTGRES_DB: ${POSTGRES_DB:-pricewatch}
+    POSTGRES_USER: ${POSTGRES_USER:-pricewatch}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: "5432"
+    SCRAPING_ALLOWED_HOSTS: ${SCRAPING_ALLOWED_HOSTS:-}
+    CELERY_BROKER_URL: redis://redis:6379/0
+    PRICEWATCH_BASE_URL: http://127.0.0.1:${WEB_PORT:-8000}
+  volumes:
+    - .:/app
+
+services:
+  redis:
+    image: redis:7.4-bookworm
+    command: ["redis-server", "--appendonly", "yes", "--save", "", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pricewatch}
+      POSTGRES_USER: ${POSTGRES_USER:-pricewatch}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  migrate:
+    <<: *django
+    command: ["python", "manage.py", "migrate", "--noinput"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    <<: *django
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready/', timeout=5)"
+      interval: 15s
+      timeout: 6s
+      retries: 3
+      start_period: 10s
+    init: true
+
+  worker:
+    <<: *django
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--concurrency=2", "--hostname=pricewatch@%h"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import socket; from config.celery import app; assert app.control.inspect(destination=['pricewatch@'+socket.gethostname()], timeout=3).ping()"
+      interval: 30s
+      timeout: 6s
+      retries: 3
+      start_period: 15s
+    stop_grace_period: 90s
+    init: true
+
+  beat:
+    <<: *django
+    command: ["celery", "-A", "config", "beat", "--loglevel=INFO", "--schedule=/var/lib/pricewatch/beat/schedule", "--pidfile=/tmp/pricewatch-beat.pid"]
+    volumes:
+      - .:/app
+      - beat_data:/var/lib/pricewatch/beat
+    tmpfs: [/tmp]
+    depends_on:
+      worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; from pathlib import Path; os.kill(int(Path('/tmp/pricewatch-beat.pid').read_text()), 0)"]
+      interval: 20s
+      timeout: 4s
+      retries: 3
+      start_period: 10s
+    init: true
+
+  # Explicit opt-in services: isolated DB/broker queue and controlled HTTP only.
+  fixture:
+    <<: *django
+    profiles: [integration]
+    command: ["python", "-m", "tests.integration.http_server"]
+    environment:
+      <<: *django-environment
+      CELERY_BROKER_URL: redis://redis:6379/15
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+    init: true
+
+  integration-worker:
+    <<: *django
+    profiles: [integration]
+    command: ["celery", "-A", "tests.integration.worker:app", "worker", "--loglevel=INFO", "--concurrency=2", "--hostname=integration@%h"]
+    environment: &integration-environment
+      <<: *django-environment
+      DJANGO_SETTINGS_MODULE: config.settings.integration
+      PRICEWATCH_INTEGRATION: "1"
+      POSTGRES_DB: test_pricewatch
+      CELERY_BROKER_URL: redis://redis:6379/15
+      PRICEWATCH_BASE_URL: http://127.0.0.1:${INTEGRATION_WEB_PORT:-8011}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      fixture:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import socket; from config.celery import app; assert app.control.inspect(destination=['integration@'+socket.gethostname()], timeout=3).ping()"
+      interval: 15s
+      timeout: 6s
+      retries: 4
+      start_period: 15s
+    stop_grace_period: 90s
+    init: true
+
+  integration-beat:
+    <<: *django
+    profiles: [integration]
+    environment: *integration-environment
+    command: ["celery", "-A", "config", "beat", "--loglevel=INFO", "--schedule=/var/lib/pricewatch/beat/schedule", "--pidfile=/tmp/pricewatch-beat.pid"]
+    volumes:
+      - .:/app
+      - integration_beat_data:/var/lib/pricewatch/beat
+    tmpfs: [/tmp]
+    depends_on:
+      integration-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; from pathlib import Path; os.kill(int(Path('/tmp/pricewatch-beat.pid').read_text()), 0)"]
+      interval: 10s
+      timeout: 4s
+      retries: 3
+      start_period: 5s
+    init: true
+
+  integration-web:
+    <<: *django
+    profiles: [integration]
+    environment: *integration-environment
+    ports:
+      - "127.0.0.1:${INTEGRATION_WEB_PORT:-8011}:8000"
+    depends_on:
+      integration-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready/', timeout=3)"]
+      interval: 15s
+      timeout: 4s
+      retries: 3
+      start_period: 10s
+    init: true
+
+volumes:
+  postgres_data:
+  redis_data:
+  beat_data:
+  integration_beat_data:

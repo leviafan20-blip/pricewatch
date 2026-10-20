@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{% if editing %}Настройки{% else %}Добавить товар{% endif %} — PriceWatch{% endblock %}
+{% block content %}
+<div class="container page-container dashboard-layout">
+  <a class="back-link" href="{% if editing %}{% url 'monitoring:detail' monitor.pk %}{% else %}{% url 'monitoring:list' %}{% endif %}">← {% if editing %}К товару{% else %}К мониторингам{% endif %}</a>
+  <div class="dashboard-heading"><div><p class="eyebrow">{% if editing %}Настройки мониторинга{% else %}Новый мониторинг{% endif %}</p><h1>{% if editing %}Редактировать товар{% else %}Добавить товар{% endif %}</h1><p class="page-description">Сначала сохраните настройки. Проверку можно запустить со страницы товара.</p></div></div>
+  <form method="post" class="workspace-card monitor-form" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    {% include 'monitoring/_field.html' with field=form.name %}
+    {% include 'monitoring/_field.html' with field=form.url %}
+    <div class="allowlist-note">{% if allowed_hosts %}<strong>Разрешённые сайты:</strong> {{ allowed_hosts|join:', ' }}. Поддомены разрешаются отдельно.{% else %}<strong>Список сайтов пока не настроен.</strong> Для сетевых проверок администратор должен указать разрешённые домены.{% endif %}</div>
+    <fieldset class="notification-options"><legend>Уведомления о цене</legend>
+      {% include 'monitoring/_field.html' with field=form.notification_mode %}
+      <div class="selector-grid">{% include 'monitoring/_field.html' with field=form.notification_threshold %}{% include 'monitoring/_field.html' with field=form.notification_currency %}</div>
+      <p class="form-text">Порог используется только в режиме пересечения: предыдущая цена ≥ порога, новая &lt; порога, валюта совпадает. Первое получение цены и смена валюты/URL не создают уведомление. По умолчанию уведомления выключены.</p>
+      <p class="form-text">Внутренние уведомления доступны в кабинете. <a href="{% url 'notifications:settings' %}">Email настраивается отдельно для аккаунта</a>.</p>
+    </fieldset>
+    <details class="selector-settings" {% if form.errors %}open{% endif %}>
+      <summary>Настройки извлечения <span>CSS-селекторы и валюта</span></summary>
+      <p class="form-text mt-3">Оставьте поля пустыми для JSON-LD и метаданных. Селектор должен выбирать один элемент. При ручном выборе цены её валюта определяется из выбранного текста или явной настройки.</p>
+      <div class="selector-grid">
+        {% include 'monitoring/_field.html' with field=form.title_selector %}
+        {% include 'monitoring/_field.html' with field=form.title_attribute %}
+        {% include 'monitoring/_field.html' with field=form.price_selector %}
+        {% include 'monitoring/_field.html' with field=form.price_attribute %}
+        {% include 'monitoring/_field.html' with field=form.currency_selector %}
+        {% include 'monitoring/_field.html' with field=form.currency_attribute %}
+        {% include 'monitoring/_field.html' with field=form.availability_selector %}
+        {% include 'monitoring/_field.html' with field=form.availability_attribute %}
+      </div>
+      {% include 'monitoring/_field.html' with field=form.currency_hint %}
+    </details>
+    {% if editing %}<p class="form-text">Уже поставленная в очередь проверка использует сохранённые при запуске настройки. Изменения применятся к следующей проверке.</p>{% endif %}
+    <div class="form-actions"><button class="btn btn-primary" type="submit">{% if editing %}Сохранить изменения{% else %}Создать мониторинг{% endif %}</button><a class="btn btn-outline-secondary" href="{% if editing %}{% url 'monitoring:detail' monitor.pk %}{% else %}{% url 'monitoring:list' %}{% endif %}">Отмена</a></div>
+  </form>
+</div>
+{% endblock %}

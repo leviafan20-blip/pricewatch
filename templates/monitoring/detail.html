@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load monitoring tz %}
+{% block title %}{{ monitor.name }} — PriceWatch{% endblock %}
+{% block content %}
+<div class="container page-container dashboard-layout">
+  <a class="back-link" href="{% url 'monitoring:list' %}{% if monitor.archived_at %}?state=archived{% endif %}">← К мониторингам</a>
+  <div class="dashboard-heading monitor-detail-heading">
+    <div><p class="eyebrow">{% if monitor.archived_at %}Архив{% else %}Мониторинг товара{% endif %}</p><h1>{{ monitor.name }}</h1><a class="product-url" href="{{ monitor.url }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ display_url }} <span aria-hidden="true">↗</span></a></div>
+    {% if not monitor.archived_at %}<div class="monitor-actions"><a class="btn btn-outline-secondary" href="{% url 'monitoring:edit' monitor.pk %}">Настройки</a><form method="post" action="{% url 'monitoring:check' monitor.pk %}">{% csrf_token %}<button type="submit" class="btn btn-primary">{% if pending_run %}Повторить отправку{% else %}Проверить сейчас{% endif %}</button></form></div>{% endif %}
+  </div>
+  {% if monitor.archived_at %}<div class="alert alert-secondary">Мониторинг архивирован {{ monitor.archived_at|date:'d.m.Y H:i' }}. История сохранена; новые проверки отключены.</div>{% endif %}
+  {% if pending_run %}<div class="alert alert-info" role="status">{% if pending_run.status == 'running' %}Проверка выполняется в фоне.{% else %}Проверка ожидает worker.{% endif %} <a href="{% url 'monitoring:detail' monitor.pk %}">Обновить состояние</a>. Повторная отправка использует то же задание и не создаёт новое наблюдение.</div>{% endif %}
+  <div class="product-summary">
+    <section class="workspace-card summary-card"><p class="summary-label">Последняя известная цена</p><div class="current-price">{% if latest_price %}{{ latest_price.price|amount }} <span>{{ latest_price.currency }}</span>{% else %}—{% endif %}</div><p class="monitor-subline">{% if latest_price %}Получена {{ latest_price.observed_at|date:'d.m.Y H:i:s' }}{% else %}Успешной проверки с ценой пока нет{% endif %}</p>{% if latest_price and latest_price.check_run.url_snapshot != monitor.url %}<p class="form-text">Цена получена для предыдущего URL.{% if not monitor.archived_at %} Запустите проверку нового адреса.{% endif %}</p>{% endif %}</section>
+    <section class="workspace-card summary-card"><p class="summary-label">Последнее известное наличие</p><p class="summary-value">{% if latest_observation %}{{ latest_observation.get_availability_display }}{% else %}Неизвестно{% endif %}</p><p class="monitor-subline">{% if latest_observation %}{{ latest_observation.title }}<br>Проверено {{ latest_observation.observed_at|date:'d.m.Y H:i:s' }}{% else %}Определится после успешной проверки{% endif %}</p>{% if latest_observation and latest_observation.price == None %}<p class="form-text">Последняя успешная проверка подтвердила отсутствие товара без цены.</p>{% endif %}</section>
+    <section class="workspace-card summary-card"><p class="summary-label">Последняя проверка</p>{% include 'monitoring/_status.html' with status=latest_run.status %}<p class="monitor-subline mt-3">{% if latest_run %}{{ latest_run.queued_at|date:'d.m.Y H:i:s' }}{% else %}Проверок ещё не было{% endif %}</p>{% if latest_run.status == 'failed' %}<p class="form-text">Предыдущие данные сохранены.</p>{% endif %}</section>
+  </div>
+  {% get_current_timezone as display_timezone %}
+  <section class="workspace-card schedule-card" aria-labelledby="schedule-title">
+    <div class="workspace-card-header"><h2 id="schedule-title">Автоматический мониторинг</h2><span class="check-badge {% if monitor.auto_enabled %}check-succeeded{% else %}check-cancelled{% endif %}">{% if monitor.archived_at %}Архив{% elif monitor.auto_enabled %}Включён{% else %}Выключен / пауза{% endif %}</span></div>
+    <div class="schedule-body">
+      <dl class="schedule-times">
+        <div><dt>Последняя постановка по расписанию</dt><dd>{% if monitor.last_scheduled_at %}{{ monitor.last_scheduled_at|date:'d.m.Y H:i:s' }}{% else %}Ещё не было{% endif %}</dd></div>
+        <div><dt>Следующая плановая проверка</dt><dd>{% if monitor.auto_enabled %}{{ monitor.next_check_at|date:'d.m.Y H:i:s' }}{% else %}Не запланирована{% endif %}</dd></div>
+      </dl>
+      {% if not monitor.archived_at %}
+      <form method="post" action="{% url 'monitoring:schedule' monitor.pk %}" class="schedule-form">
+        {% csrf_token %}
+        {% if schedule_form.non_field_errors %}<div class="alert alert-danger">{{ schedule_form.non_field_errors }}</div>{% endif %}
+        <div class="form-check form-switch">{{ schedule_form.auto_enabled }}<label class="form-check-label" for="{{ schedule_form.auto_enabled.id_for_label }}">{{ schedule_form.auto_enabled.label }}</label></div>
+        <div class="schedule-interval"><label class="form-label" for="{{ schedule_form.check_interval_hours.id_for_label }}">{{ schedule_form.check_interval_hours.label }}</label>{{ schedule_form.check_interval_hours }}{% for error in schedule_form.check_interval_hours.errors %}<div class="invalid-feedback d-block" role="alert">{{ error }}</div>{% endfor %}</div>
+        <button type="submit" class="btn btn-outline-secondary">Сохранить расписание</button>
+      </form>
+      <p class="form-text">При включении или возобновлении первая проверка запланирована на ближайший цикл диспетчера. Далее — выбранный интервал. Пауза отменяет ожидающие автоматические проверки.</p>
+      {% endif %}
+      <p class="schedule-timezone">Время: {{ display_timezone }}. Диспетчер проверяет расписания раз в минуту; очередь и правила сайта могут задержать выполнение.</p>
+    </div>
+  </section>
+  {% include 'monitoring/_analytics.html' %}
+  <section class="workspace-card" aria-labelledby="observations-title">
+    <div class="workspace-card-header"><h2 id="observations-title">Наблюдения за выбранный период</h2><span class="analytics-caption">{% if observation_page %}{{ observation_page.paginator.count }} записей{% endif %}</span></div>
+    {% if observation_page %}<div class="table-responsive"><table class="table monitor-table history-table mb-0"><thead><tr><th>Дата наблюдения</th><th>Цена</th><th>Наличие и источник</th></tr></thead><tbody>
+    {% for observation in observation_page %}<tr><td>{{ observation.observed_at|date:'d.m.Y H:i:s' }}</td><td><strong>{{ observation.price|amount }} {{ observation.currency }}</strong></td><td>{{ observation.get_availability_display }}<span class="monitor-subline">{{ observation.title }} · {{ observation.source }}</span>{% for diagnostic in observation.diagnostics %}<p class="diagnostic-text">{{ diagnostic }}</p>{% endfor %}</td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<p class="analytics-note p-4">{% if history_form.errors %}Исправьте фильтры, чтобы увидеть наблюдения.{% else %}Наблюдений за выбранный период нет.{% endif %}</p>{% endif %}
+  </section>
+  {% include 'monitoring/_history_pagination.html' with history_page=observation_page page_parameter='obs_page' page_label='Страницы наблюдений' %}
+  <section class="workspace-card" aria-labelledby="history-title"><div class="workspace-card-header"><h2 id="history-title">Журнал проверок и технические ошибки</h2><span class="analytics-caption">Всё время · отдельно от цен</span></div>
+  {% if page_obj %}<div class="table-responsive"><table class="table monitor-table history-table mb-0"><thead><tr><th scope="col">Проверка</th><th scope="col">Состояние</th><th scope="col">Техническая диагностика</th></tr></thead><tbody>
+  {% for run in page_obj %}<tr><td>{{ run.queued_at|date:'d.m.Y H:i:s' }}<span class="monitor-subline">{% if run.scheduled_for %}По расписанию · {{ run.scheduled_for|date:'d.m.Y H:i' }}{% else %}Вручную{% endif %}</span><span class="monitor-subline">{% if run.finished_at %}Завершена {{ run.finished_at|date:'H:i:s' }}{% elif run.started_at %}Начата {{ run.started_at|date:'H:i:s' }}{% else %}Ожидает выполнения{% endif %}</span><span class="run-id">{{ run.pk }}</span></td><td>{% include 'monitoring/_status.html' with status=run.status %}</td><td>
+    {% if run.status == 'succeeded' %}<span class="monitor-subline">Наблюдение сохранено в истории цен.</span>
+    {% elif run.status == 'failed' %}<code class="error-code">{{ run.error_code }}</code><p class="diagnostic-text">{{ run.error_message }}</p>
+    {% elif run.status == 'cancelled' %}<span class="monitor-subline">Проверка отменена.</span>{% else %}<span class="monitor-subline">Результат появится после выполнения задания.</span>{% endif %}
+  </td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="workspace-empty"><h2>История начнётся с первой проверки</h2><p class="empty-description">Запустите проверку кнопкой «Проверить сейчас». Загрузка выполняется в фоне.</p></div>{% endif %}</section>
+  {% include 'monitoring/_history_pagination.html' with history_page=page_obj page_parameter='page' page_label='Страницы журнала' %}
+  {% if not monitor.archived_at %}<div class="monitor-bottom-actions"><span>Архивирование сохраняет историю и отключает новые проверки.</span><a href="{% url 'monitoring:archive' monitor.pk %}">Архивировать мониторинг</a></div>{% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}{% include 'monitoring/_chart_scripts.html' %}{% endblock %}

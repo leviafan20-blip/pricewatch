@@ -1,0 +1,7 @@
+{% if page_obj.has_other_pages %}
+  <nav class="monitor-pagination" aria-label="Страницы истории">
+    {% if page_obj.has_previous %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.previous_page_number }}{% if archived %}&amp;state=archived{% endif %}">Назад</a>{% endif %}
+    <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.next_page_number }}{% if archived %}&amp;state=archived{% endif %}">Далее</a>{% endif %}
+  </nav>
+{% endif %}

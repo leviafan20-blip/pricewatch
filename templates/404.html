@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Страница не найдена — PriceWatch{% endblock %}
+{% block content %}
+  <div class="container page-container error-layout">
+    <section class="error-card" aria-labelledby="error-title">
+      <p class="eyebrow">Ошибка 404</p>
+      <h1 id="error-title">Страница не найдена</h1>
+      <p>Возможно, адрес изменился или в нём есть опечатка.</p>
+      <a class="btn btn-primary" href="{% url 'core:dashboard' %}">Перейти в кабинет</a>
+    </section>
+  </div>
+{% endblock %}

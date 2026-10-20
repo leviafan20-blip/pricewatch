@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load monitoring %}
+{% block title %}Уведомления — PriceWatch{% endblock %}
+{% block content %}
+<div class="container page-container dashboard-layout">
+  <div class="dashboard-heading"><div><p class="eyebrow">Изменения цен</p><h1>Уведомления</h1><p class="page-description">Только подтверждённые изменения по вашим правилам.</p></div><a class="btn btn-outline-secondary" href="{% url 'notifications:settings' %}">Настройки email</a></div>
+  <div class="notification-toolbar"><nav class="monitor-tabs" aria-label="Фильтр уведомлений"><a href="{% url 'notifications:list' %}" {% if not unread_only %}aria-current="page"{% endif %}>Все</a><a href="{% url 'notifications:list' %}?state=unread" {% if unread_only %}aria-current="page"{% endif %}>Непрочитанные</a></nav><form method="post" action="{% url 'notifications:read_all' %}">{% csrf_token %}<button class="btn btn-outline-secondary" type="submit">Прочитать все</button></form></div>
+  <section class="workspace-card notification-list" aria-label="Список уведомлений">
+  {% for notice in page_obj %}<article class="notification-item {% if not notice.read_at %}notification-unread{% endif %}">
+    <div class="notification-item-heading"><h2><a href="{% url 'monitoring:detail' notice.observation.check_run.monitor_id %}">{{ notice.observation.check_run.monitor.name }}</a></h2><span class="check-badge {% if notice.read_at %}check-cancelled{% else %}check-succeeded{% endif %}">{% if notice.read_at %}Прочитано{% else %}Новое{% endif %}</span></div>
+    <p class="notification-prices">{{ notice.previous_observation.price|amount }} → <strong>{{ notice.observation.price|amount }} {{ notice.observation.currency }}</strong></p>
+    <p class="price-change {% if notice.change < 0 %}price-down{% else %}price-up{% endif %}"><strong>{% if notice.change > 0 %}+{% endif %}{{ notice.change|amount }} {{ notice.observation.currency }}</strong> / {% if notice.percent != None %}{% if notice.percent > 0 %}+{% endif %}{{ notice.percent|percent_amount }} %{% else %}процент не определён: начальная цена 0{% endif %}</p>
+    <p class="form-text">{{ notice.created_at|date:'d.m.Y H:i:s' }} · {% if notice.rule == 'threshold' %}Пересечение порога{% elif notice.rule == 'decrease' %}Снижение цены{% else %}Изменение цены{% endif %} · Email: {{ notice.get_email_status_display }}</p>
+    {% if notice.email_status == 'failed' or notice.email_status == 'unknown' %}<p class="diagnostic-text">{{ notice.email_error_code }}. Внутреннее уведомление сохранено. Автоматический повтор письма не выполняется, чтобы исключить дубликат.</p>{% endif %}
+    {% if not notice.read_at %}<form method="post" action="{% url 'notifications:read' notice.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Отметить прочитанным</button></form>{% endif %}
+  </article>{% empty %}<div class="workspace-empty"><h2>{% if unread_only %}Непрочитанных уведомлений нет{% else %}Уведомлений пока нет{% endif %}</h2><p class="empty-description">Настройте правило в карточке мониторинга. Первое получение цены задаёт базовую точку; уведомления появятся при следующих подходящих изменениях.</p><a class="btn btn-primary" href="{% url 'monitoring:list' %}">К мониторингам</a></div>{% endfor %}
+  </section>
+  {% include 'monitoring/_history_pagination.html' with history_page=page_obj page_parameter='page' page_label='Страницы уведомлений' %}
+</div>
+{% endblock %}

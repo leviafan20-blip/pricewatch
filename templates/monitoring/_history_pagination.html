@@ -1,0 +1,8 @@
+{% load monitoring %}
+{% if history_page.has_other_pages %}
+<nav class="monitor-pagination" aria-label="{{ page_label }}">
+  {% if history_page.has_previous %}<a class="btn btn-outline-secondary" href="{% history_query page_parameter history_page.previous_page_number %}">Назад</a>{% endif %}
+  <span>Страница {{ history_page.number }} из {{ history_page.paginator.num_pages }}</span>
+  {% if history_page.has_next %}<a class="btn btn-outline-secondary" href="{% history_query page_parameter history_page.next_page_number %}">Далее</a>{% endif %}
+</nav>
+{% endif %}

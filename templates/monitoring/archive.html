@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Архивирование — PriceWatch{% endblock %}
+{% block content %}
+<div class="container page-container dashboard-layout"><a class="back-link" href="{% url 'monitoring:detail' monitor.pk %}">← К товару</a><div class="workspace-card archive-card"><p class="eyebrow">Управление мониторингом</p><h1>Архивировать «{{ monitor.name }}»?</h1><p>Новые проверки будут отключены, задания в очереди отменены. Уже выполняющаяся проверка сможет сохранить свой результат. Вся история останется доступна в архиве.</p><form method="post">{% csrf_token %}<div class="form-actions"><button class="btn btn-primary" type="submit">Архивировать</button><a class="btn btn-outline-secondary" href="{% url 'monitoring:detail' monitor.pk %}">Отмена</a></div></form></div></div>
+{% endblock %}

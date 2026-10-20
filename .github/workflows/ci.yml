@@ -1,0 +1,48 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  django:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_DB: pricewatch
+          POSTGRES_USER: pricewatch
+          POSTGRES_PASSWORD: ci-only-pricewatch
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pricewatch -d pricewatch"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      POSTGRES_DB: pricewatch
+      POSTGRES_USER: pricewatch
+      POSTGRES_PASSWORD: ci-only-pricewatch
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5432"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements/*.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Check Django configuration and migrations
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+      - name: Run tests on PostgreSQL
+        run: python -m pytest --cov=apps --cov-report=term-missing
+      - name: Check static assets
+        run: python manage.py collectstatic --noinput
