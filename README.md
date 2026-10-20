@@ -1,203 +1,207 @@
 # PriceWatch
 
-Веб-приложение для мониторинга цен и изменений выбранных блоков страниц.
-Разработка идёт последовательно; реализованы **этапы 1–6 — основа, безопасная
-загрузка и извлечение данных, ручной и автоматический мониторинг, аналитика и уведомления**.
+PriceWatch is a Django application for tracking product prices over time. It checks
+product pages in the background, keeps a price history, and notifies you when a
+price changes according to your rules.
 
-Готово: Django 5.2 LTS, PostgreSQL 17, закрытый вход, управление пользователями
-через Django Admin, адаптивные шаблоны Bootstrap и автоматические тесты.
-Есть отдельный Python-компонент HTTPX/BeautifulSoup: проверка URL и DNS/IP,
-robots.txt, общий лимит домена, CSS/JSON-LD, точные денежные значения Decimal.
-В интерфейсе доступны создание, редактирование, архив и история мониторингов.
-Проверки выполняет Celery через Redis; результаты и ошибки хранятся в PostgreSQL.
-Celery Beat запускает диспетчер расписаний; интервалы 1/3/6/12/24 часа,
-пауза и следующая проверка хранятся в PostgreSQL. Есть локальный Chart.js,
-периоды, Decimal-статистика, история с фильтрами и сравнение 2–5 товаров одной
-валюты. Уведомления работают при изменении/снижении цены и пересечении порога:
-в кабинете и асинхронно через Django email. Локально письма остаются в консоли;
-реальный SMTP и учётные данные не нужны. Уведомления по умолчанию выключены.
-Импорт пока не добавлен. Поток данных и команды проверки:
-[`docs/components/analytics.md`](docs/components/analytics.md).
-Устройство почтовой доставки и её ограничения:
-[`docs/components/notifications.md`](docs/components/notifications.md).
+The included Docker setup is for local development and evaluation. It is not
+configured for a public production deployment.
 
-## Быстрый запуск на Windows
+## Features
 
-Нужны Docker Desktop с Linux engine / WSL 2 и Docker Compose v2.
-Python 3.13 находится внутри контейнера; устанавливать Python для этого запуска
-не обязательно. Команды ниже выполняются в PowerShell из корня проекта.
+- Create, edit, and archive monitors, with separate data for each user.
+- Extract product names, prices, currencies, and availability from JSON-LD
+  `Product` / `Offer` data, supported metadata, or custom CSS selectors.
+- Run checks manually or every 1, 3, 6, 12, or 24 hours. Pause and resume automatic
+  checks and see when the next check is due.
+- Keep successful observations and check diagnostics separately. Failed checks
+  preserve the previous price; duplicate task deliveries do not duplicate observations.
+- View interactive price charts for 7, 30, or 90 days, or all time. Filter and
+  paginate observations, see minimum, maximum, average, and latest prices, and
+  compare 2-5 monitors in the same currency.
+- Receive in-app notifications for any price change, a price decrease, or a drop
+  below a threshold. Notifications include price differences, read status, and an
+  unread count. The first price and unchanged prices do not trigger notifications;
+  threshold alerts fire only when the price crosses below the threshold.
+- Enable email notifications per user. Celery sends messages through Django's mail
+  backend; local messages are written to the worker console rather than sent externally.
+- Manage users through Django Admin. There is no public registration.
 
-1. Создайте локальный файл настроек, если его ещё нет:
+## Tech Stack
 
-   ```powershell
-   if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-   ```
+| Area | Tools |
+| --- | --- |
+| Application | Python 3.13, Django 5.2 LTS |
+| Database | PostgreSQL 17 |
+| Background work | Celery, Celery Beat, Redis 7.4 |
+| Page extraction | HTTPX, BeautifulSoup |
+| Interface | Django Templates, Bootstrap 5, Chart.js 4 |
+| Development and tests | Docker Compose, pytest, pytest-django, pytest-cov, GitHub Actions |
 
-2. Если секреты в `.env` ещё не заполнены, сгенерируйте **два разных** случайных
-   значения и вставьте как `DJANGO_SECRET_KEY` и `POSTGRES_PASSWORD`:
+Bootstrap and Chart.js are included locally. No frontend build step or Node.js
+installation is required. Prices and statistics use `Decimal`; conversion to
+JavaScript numbers happens only when drawing charts.
 
-   ```powershell
-   docker run --rm python:3.13-slim python -c "import secrets; print(secrets.token_urlsafe(50))"
-   ```
+## Getting Started
 
-   Если Python уже установлен, можно выполнить аналогичную команду через
-   `python -c "import secrets; print(secrets.token_urlsafe(50))"`.
+Install Docker with Docker Compose v2. On Windows, use Docker Desktop with the
+Linux engine / WSL 2. Python runs inside the container.
 
-   При первоначальной подготовке этого рабочего каталога локальный `.env`
-   уже создан со случайными значениями: повторно менять их не нужно.
-   Его содержимое не входит в Git и образ.
+Run the following commands from the project root. The examples use PowerShell;
+Docker commands also work in other shells.
 
-3. Проверьте Docker и поднимите приложение:
+### 1. Configure the environment
 
-   ```powershell
-   docker info
-   docker compose config --quiet
-   docker compose up --build -d
-   docker compose ps -a
-   ```
+Copy the example without overwriting an existing configuration:
 
-   PostgreSQL сначала проходит healthcheck, затем одноразовый сервис `migrate`
-   применяет миграции. После его успеха и готовности Redis запускаются `web`, `worker` и `beat`.
-   Состояние `migrate: Exited (0)` означает успех.
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
 
-4. Создайте администратора, самостоятельно задав пароль:
+On macOS or Linux, use `test -f .env || cp .env.example .env` instead.
 
-   ```powershell
-   docker compose exec web python manage.py createsuperuser
-   ```
+For a new setup, run this command twice to generate two different random values:
 
-5. Откройте http://127.0.0.1:8000/ и войдите. Администрирование доступно
-   по http://127.0.0.1:8000/admin/. Эти адреса предполагают `WEB_PORT=8000`.
-   В подготовленном локальном `.env` выбран свободный порт **8010**, поскольку
-   8000 занят другим процессом: используйте http://127.0.0.1:8010/.
-   Обычных пользователей создаёт администратор.
-   Публичных страниц регистрации и восстановления пароля нет.
+```powershell
+docker run --rm python:3.13-slim python -c "import secrets; print(secrets.token_urlsafe(50))"
+```
 
-Изменения Python/HTML/CSS видны через bind mount и Django autoreload.
-После изменения кода задач/расписания перезапустите их: `docker compose restart worker beat`.
-Приложение опубликовано только на `127.0.0.1`; порты PostgreSQL и Redis наружу не открыты.
-Это окружение **локальной разработки**, а не конфигурация публичного сервера.
-При выборе другого `WEB_PORT` укажите этот порт и в `DJANGO_CSRF_TRUSTED_ORIGINS`.
+Put one value in `DJANGO_SECRET_KEY` and the other in `POSTGRES_PASSWORD` in `.env`.
+Set them before the first database start. Keep `.env` private; it is excluded from
+Git and the Docker build context. Compose passes its values to Django; Django does
+not load `.env` itself.
 
-## Проверки
+The default `WEB_PORT` is `8000`. If you change it, update the ports in
+`DJANGO_CSRF_TRUSTED_ORIGINS` as well.
 
-Основной вариант использует настоящий PostgreSQL в Compose:
+### 2. Build and start the services
+
+```powershell
+docker compose config --quiet
+docker compose up --build -d
+docker compose ps -a
+```
+
+Compose starts PostgreSQL and Redis, applies Django migrations through the
+one-off `migrate` service, then starts the web application, Celery worker, and
+Celery Beat. `migrate` exiting with code `0` is expected. Wait for the long-running
+services to report healthy before opening the application.
+
+PostgreSQL, Redis, and Beat state use named Docker volumes. Database and Redis
+ports are not exposed to the host; the web service binds to `127.0.0.1` only.
+
+### 3. Check the setup and create an administrator
 
 ```powershell
 docker compose exec web python manage.py check
-docker compose exec web python manage.py makemigrations --check --dry-run
-docker compose exec web python -m pytest --ds=config.settings.test --reuse-db --cov=apps --cov-report=term-missing
-docker compose exec web python manage.py collectstatic --noinput
+docker compose exec web python manage.py migrate --check
+docker compose exec web python manage.py createsuperuser
 ```
 
-Параметр `--ds=config.settings.test` явно выбирает тестовые настройки:
-контейнер обычно передаёт `DJANGO_SETTINGS_MODULE=config.settings.local`,
-который имеет приоритет над значением из `pyproject.toml`.
-Pytest создаёт отдельную тестовую БД; `--reuse-db` сохраняет её между прогонами.
-Схема рабочей БД и данные пользователей тестами не очищаются.
-Для тестов нужна возможность создать тестовую БД; локальный Compose её даёт.
+The migration check verifies that startup applied all migrations. The last command
+prompts for administrator credentials. Use Django Admin to create other users.
 
-Без Docker можно проверить независимую Python-логику на явном SQLite fallback:
+Open [PriceWatch](http://127.0.0.1:8000/) and
+[Django Admin](http://127.0.0.1:8000/admin/), using your `WEB_PORT` if it differs.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements/dev.txt
-.\.venv\Scripts\python.exe -m pytest tests/scraping/test_extraction.py tests/scraping/test_safety.py --ds=config.settings.test_sqlite
-```
+### 4. Configure a monitor
 
-Python 3.12 также поддерживается для локальных проверок; контейнер и CI используют
-3.13. Ручной мониторинг требует PostgreSQL advisory locks; полный набор на SQLite
-не поддерживается. SQLite fallback не используется приложением.
-MD5-хеширование включено только в тестовых настройках для ускорения; приложение
-использует штатное безопасное хеширование Django.
+Remote fetching is disabled by default. Before adding a real product URL, review
+that site's access rules and add its exact hostname to `SCRAPING_ALLOWED_HOSTS`
+in `.env`. Use a comma-separated list without schemes, paths, or wildcards;
+subdomains must be listed separately. Run `docker compose up -d` after changing it.
 
-GitHub Actions запускает проверки, миграции, тесты и сборку статики с PostgreSQL 17.
-Для локальной проверки на отдельно запущенном PostgreSQL задайте `POSTGRES_DB`,
-`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT` в окружении
-и запустите `.\.venv\Scripts\python.exe -m pytest`.
+Sign in, create a monitor, and run a manual check. If automatic extraction cannot
+identify one product and price, set CSS selectors in the monitor form. You can
+then enable a schedule and choose a notification rule. Email preferences are
+separate user settings; notification rules are disabled by default.
 
-## Основные файлы
-
-- `config/settings/base.py` — общая конфигурация и PostgreSQL.
-- `config/settings/local.py` — локальный режим с явным секретом.
-- `config/settings/test.py` — тесты на PostgreSQL.
-- `apps/accounts/` — собственная модель пользователя, формы и admin.
-- `apps/core/` — защищённый кабинет и проверки состояния.
-- `templates/`, `static/` — интерфейс; Bootstrap хранится локально.
-- `compose.yaml`, `Dockerfile` — окружение разработки.
-- `tests/` — проверки доступа, сессий, CSRF, admin и состояния БД.
-- `docs/architecture.md` — принятые архитектурные решения.
-- `docs/components/foundation.md` — объяснение реализации первого этапа.
-- `apps/monitoring/scraping/` — безопасная загрузка и извлечение данных.
-- `docs/components/scraping.md` — устройство и диагностика второго этапа.
-- `apps/monitoring/checks.py`, `models.py`, `tasks.py` — ручные проверки и история.
-- `docs/components/monitoring.md` — устройство, восстановление и интеграционные тесты третьего этапа.
-- `apps/monitoring/scheduling.py` — конкурентный диспетчер и восстановление плановых заданий.
-- `docs/components/scheduling.md` — правила времени, пауза, простой и проверка перезапуска.
-- `docs/runbook.md` — команды сопровождения и диагностики.
-
-`.env` читает Docker Compose. Django не загружает его самостоятельно: при запуске
-Python вне Docker переменные нужно передать через окружение процесса.
-Секреты и пароли не передаются в репозиторий. Прямые и транзитивные версии Python-
-зависимостей зафиксированы в `requirements/`; обновляйте их вместе и проверяйте тесты.
-
-## Проверка парсера без внешних сайтов
+To inspect the parser without contacting any website:
 
 ```powershell
 docker compose exec web python manage.py parse_product tests/fixtures/scraping/json_ld_product.html
-docker compose exec web python manage.py parse_product tests/fixtures/scraping/manual_product.html --title-selector h1 --price-selector .price --currency RUB --availability-selector .availability
 ```
 
-Команда читает только локальный UTF-8 HTML. Она не делает HTTP-запросов и не
-требует подключения к БД. Результат — JSON, цена представлена точной строкой.
-Примеры настройки селекторов, ошибки и ограничения описаны в
-`docs/components/scraping.md`.
-
-## Ручной и автоматический мониторинг
-
-После входа откройте `/monitors/`, добавьте URL разрешённого сайта и нажмите
-«Проверить сейчас» либо включите расписание в карточке. Ошибка сохраняется в CheckRun, успешные данные — в Observation.
-Предыдущая цена не удаляется. Повторная отправка активного задания использует
-тот же UUID. Архив сохраняет историю и отключает новые проверки.
-
-Интервал выбирается из 1, 3, 6, 12 и 24 часов. При включении первая проверка
-доступна в ближайший цикл диспетчера (обычно в течение минуты). Пауза отменяет
-ожидающие автоматические проверки. После простоя пропущенные интервалы
-сворачиваются в одну попытку. Даты хранятся в UTC и отображаются в часовом
-поясе приложения; фоновая загрузка сохраняет ограничения robots и частоты.
-
-Список `SCRAPING_ALLOWED_HOSTS` по умолчанию пуст. Реальные домены добавляются
-администратором после проверки правил доступа; wildcard и внутренние адреса
-не разрешаются. Для локальной проверки используйте изолированный профиль:
+To inspect locally generated email messages:
 
 ```powershell
-docker compose --profile integration stop integration-beat integration-web integration-worker fixture
-docker compose exec web python -m pytest --ds=config.settings.test --reuse-db --create-db
-docker compose --profile integration up -d --wait fixture integration-worker integration-beat
-docker compose exec -e PRICEWATCH_INTEGRATION=1 -e PRICEWATCH_RUN_INTEGRATION=1 -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m pytest tests/integration --ds=config.settings.integration --reuse-db
+docker compose logs --tail=100 worker
 ```
 
-Это реальные PostgreSQL, Redis, Celery prefork worker, Beat и HTTP fixture в Docker,
-с отдельной тестовой БД/очередью. Eager-режим не используется; магазин не нужен.
-Стандартный прогон пропускает эти интеграционные тесты с явной причиной.
-Не запускайте одновременно несколько прогонов с одной тестовой БД.
-Интерфейс тестового профиля, контролируемые URL, устройство моделей и отладка
-описаны в `docs/components/monitoring.md` и `docs/components/scheduling.md`.
-Тестовая БД предназначена только для проверок и очищается pytest; рабочие
-пользователи и история находятся в другой БД. Перед стандартным прогоном
-остановите тестовый профиль, если он уже запущен.
+Operational commands and troubleshooting are in the [runbook](docs/runbook.md).
 
-Сетевая точка входа для прикладного кода: `apps.monitoring.services.inspect_url`.
-Она требует PostgreSQL для общих лимитов и явного списка `SCRAPING_ALLOWED_HOSTS`
-в `.env` (точные домены через запятую). Пока домены не выбраны, список пуст:
-удалённая загрузка безопасно запрещена. После изменения переменной повторите
-`docker compose up -d`. Тесты используют фикстуры и подменённые DNS/HTTP-ответы;
-случайный внешний сетевой доступ в тестах scraping блокируется.
+## Running Tests
 
-## Границы текущей версии
+With the Docker services running:
 
-Redis, Celery, модели товаров и API мониторинга добавятся по следующим
-заданиям. Пока кабинет показывает честное пустое состояние. Пользовательский
-интерфейс не использует JavaScript; Django Admin использует штатные скрипты Django.
-Настройка HTTPS, сервера приложений и защиты входа от перебора войдёт в подготовку
-публичного развёртывания; этот Compose должен оставаться доступным только локально.
+```powershell
+docker compose exec web python manage.py makemigrations --check --dry-run
+docker compose exec web python -m pytest --ds=config.settings.test --reuse-db --cov=apps --cov-report=term-missing
+```
+
+Select the test settings explicitly: the web container normally uses local
+settings. Pytest uses a separate PostgreSQL test database; `--reuse-db` keeps it
+between runs. The suite covers authentication, user isolation, extraction, URL
+safety, task handling, scheduling, analytics, and notifications. Scraping tests
+use local fixtures and mocked network responses rather than real stores.
+
+Tests requiring live Celery services are skipped in the standard run. The
+[runbook](docs/runbook.md) describes the opt-in integration profile,
+which uses PostgreSQL, Redis, a real worker and Beat, and a controlled HTTP server.
+Stop that profile before running the standard suite, and run suites sequentially:
+the integration profile shares the test database, not the application database.
+
+GitHub Actions runs Django checks, migration checks, tests with PostgreSQL, and
+static file collection. Integration tests require the separate Docker profile.
+
+## Project Structure
+
+```text
+apps/
+  accounts/           User model, login, and admin configuration
+  core/               Dashboard and health checks
+  monitoring/         Monitors, observations, tasks, scheduling, and analytics
+    scraping/         URL validation, HTTP loading, and product extraction
+  notifications/      Price-change rules, inbox, and email delivery
+config/               Django settings, URLs, and Celery configuration
+templates/            Django Templates
+static/               Application assets and bundled Bootstrap / Chart.js
+tests/                Unit, application, and opt-in integration tests
+docs/                 Architecture, component notes, and operational guides
+requirements/         Pinned Python dependencies
+compose.yaml          Local application services and integration profile
+Dockerfile            Python development image
+.env.example          Environment template without secrets
+```
+
+Implementation details are in the [architecture notes](docs/architecture.md) and
+component guides for [scraping](docs/components/scraping.md),
+[scheduling](docs/components/scheduling.md), [analytics](docs/components/analytics.md),
+and [notifications](docs/components/notifications.md). These supporting documents
+are currently in Russian.
+
+## Limitations
+
+- This is a local development setup using Django's development server and debug
+  mode. HTTPS, production serving, and login rate limiting are not configured.
+- The interface is currently in Russian. Timestamps are stored in UTC and shown
+  in the configured Django timezone, currently `Asia/Yekaterinburg`.
+- Extraction depends on each site's HTML. The loader accepts only allowlisted
+  HTTP(S) hosts on standard ports, validates DNS and IP addresses, checks redirects,
+  and blocks private and internal addresses to reduce SSRF risk. Timeouts and
+  response-size limits also apply. Adding a hostname does not bypass these checks.
+- Requests respect `robots.txt` and a shared per-host rate limit. A robots denial
+  or temporary failure to retrieve its rules can prevent a check. There is no
+  CAPTCHA, authentication, or access-control bypass.
+- JavaScript is not executed and Playwright is not integrated. Pages whose prices
+  require browser rendering may not work. Ambiguous prices or multiple offers
+  require explicit selectors; the parser does not guess a price.
+- Currencies are not converted or combined. Supported currency formats are limited.
+  Large chart series are sampled to at most 400 points per monitor; statistics
+  still use all valid prices in the selected period.
+- Email is console-only locally. External SMTP delivery is not configured. Once
+  sending starts, failed or interrupted sends are not automatically retried, to
+  avoid duplicate delivery; an email can therefore be lost. In-app notifications
+  and saved observations remain available.
+- Arbitrary page-content change tracking, CSV/Excel import and export, and a public
+  API are not implemented.
