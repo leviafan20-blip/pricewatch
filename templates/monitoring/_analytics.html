@@ -6,6 +6,10 @@
       {% for selected in selected_monitors %}<input type="hidden" name="monitor" value="{{ selected.pk }}">{% endfor %}
       {% for field in history_form %}<div><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="text-danger small" role="alert">{{ error }}</p>{% endfor %}</div>{% endfor %}
       <button class="btn btn-primary" type="submit">Применить</button>
+      {% if monitor %}
+      <button class="btn btn-outline-secondary" type="submit" formaction="{% url 'monitoring:export' monitor.pk %}" name="format" value="csv">Скачать CSV</button>
+      <button class="btn btn-outline-secondary" type="submit" formaction="{% url 'monitoring:export' monitor.pk %}" name="format" value="xlsx">Скачать XLSX</button>
+      {% endif %}
     </form>
     <p class="form-text">Даты включительно, в указанном часовом поясе; они уточняют выбранный период. Для произвольных дат выберите «Всё время».</p>
     {% for error in history_form.non_field_errors %}<div class="alert alert-warning" role="alert">{{ error }}</div>{% endfor %}

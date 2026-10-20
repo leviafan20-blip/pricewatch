@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Экспорт истории — PriceWatch{% endblock %}
+{% block content %}
+<div class="container page-container dashboard-layout">
+  <a class="back-link" href="{% if monitor %}{% url 'monitoring:detail' monitor.pk %}{% else %}{% url 'monitoring:list' %}{% endif %}">← {% if monitor %}К товару{% else %}К мониторингам{% endif %}</a>
+  <div class="dashboard-heading"><div><p class="eyebrow">CSV / Excel</p><h1>Экспорт истории</h1><p class="page-description">{% if monitor %}{{ monitor.name }}{% else %}Все ваши мониторинги, включая архивные{% endif %}</p></div></div>
+  <section class="workspace-card">
+    <div class="workspace-card-header"><h2>Параметры выгрузки</h2></div>
+    <div class="analytics-body">
+      <form method="get" class="history-filters">
+        {% for field in history_form %}<div><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="text-danger small" role="alert">{{ error }}</p>{% endfor %}</div>{% endfor %}
+        <button class="btn btn-primary" type="submit" name="format" value="csv">Скачать CSV</button>
+        <button class="btn btn-outline-secondary" type="submit" name="format" value="xlsx">Скачать XLSX</button>
+      </form>
+      {% for error in history_form.non_field_errors %}<div class="alert alert-warning mt-3" role="alert">{{ error }}</div>{% endfor %}
+      <p class="form-text mt-3">Даты включительно, в часовом поясе приложения; они уточняют период. Для произвольного диапазона выберите «Всё время».</p>
+      <p class="analytics-note">До {{ export_limit }} наблюдений за выгрузку, без ограничения страницей таблицы или выборкой графика. Ошибочные проверки не включаются; отсутствие цены остаётся пустой ячейкой. Разные валюты сохраняются отдельно в каждой строке.</p>
+      <p class="analytics-note">CSV: UTF-8, разделитель «;». В Excel при импорте выберите UTF-8 и текстовый тип для точных цен. XLSX: обычные цены — числа; значения длиннее 15 значащих цифр сохраняются текстом. Столбец Price exact всегда содержит точную цену текстом. Время указано вместе с часовым поясом.</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

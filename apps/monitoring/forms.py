@@ -112,9 +112,9 @@ class HistoryFilterForm(forms.Form):
     date_to = forms.DateField(label="По дату", required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), input_formats=["%Y-%m-%d"])
     currency = forms.ChoiceField(label="Валюта", required=False)
 
-    def __init__(self, *args, currencies=(), **kwargs):
+    def __init__(self, *args, currencies=(), allow_all_currencies=False, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["currency"].choices = [("", "Выберите валюту"), *((value, value) for value in currencies)]
+        self.fields["currency"].choices = [("", "Все валюты" if allow_all_currencies else "Выберите валюту"), *((value, value) for value in currencies)]
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-select" if isinstance(field.widget, forms.Select) else "form-control"
 

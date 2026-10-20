@@ -5,7 +5,7 @@
 <div class="container page-container dashboard-layout">
   <div class="dashboard-heading">
     <div><p class="eyebrow">Рабочее пространство</p><h1>Мои мониторинги</h1><p class="page-description">Проверяйте товары и сохраняйте историю цен.</p></div>
-    <a class="btn btn-primary" href="{% url 'monitoring:create' %}">Добавить товар <span aria-hidden="true">+</span></a>
+    <div class="monitor-actions"><a class="btn btn-outline-secondary" href="{% url 'monitoring:export_all' %}">Экспорт истории</a><a class="btn btn-primary" href="{% url 'monitoring:create' %}">Добавить товар <span aria-hidden="true">+</span></a></div>
   </div>
   <nav class="monitor-tabs" aria-label="Состояние мониторингов">
     <a href="{% url 'monitoring:list' %}" {% if not archived %}aria-current="page"{% endif %}>Активные</a>

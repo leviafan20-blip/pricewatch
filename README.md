@@ -25,6 +25,9 @@ configured for a public production deployment.
   threshold alerts fire only when the price crosses below the threshold.
 - Enable email notifications per user. Celery sends messages through Django's mail
   backend; local messages are written to the worker console rather than sent externally.
+- Export filtered observations from one monitor or your entire history to CSV
+  or XLSX, including archived monitors. Exports include all matching rows, not
+  just the current page or chart sample, up to 50,000 observations per download.
 - Manage users through Django Admin. There is no public registration.
 
 ## Tech Stack
@@ -35,6 +38,7 @@ configured for a public production deployment.
 | Database | PostgreSQL 17 |
 | Background work | Celery, Celery Beat, Redis 7.4 |
 | Page extraction | HTTPX, BeautifulSoup |
+| Spreadsheet export | XlsxWriter |
 | Interface | Django Templates, Bootstrap 5, Chart.js 4 |
 | Development and tests | Docker Compose, pytest, pytest-django, pytest-cov, GitHub Actions |
 
@@ -177,8 +181,9 @@ Dockerfile            Python development image
 Implementation details are in the [architecture notes](docs/architecture.md) and
 component guides for [scraping](docs/components/scraping.md),
 [scheduling](docs/components/scheduling.md), [analytics](docs/components/analytics.md),
-and [notifications](docs/components/notifications.md). These supporting documents
-are currently in Russian.
+[notifications](docs/components/notifications.md), and
+[exports](docs/components/exports.md). Earlier component guides are in Russian;
+the export guide is in English.
 
 ## Limitations
 
@@ -203,5 +208,12 @@ are currently in Russian.
   sending starts, failed or interrupted sends are not automatically retried, to
   avoid duplicate delivery; an email can therefore be lost. In-app notifications
   and saved observations remain available.
-- Arbitrary page-content change tracking, CSV/Excel import and export, and a public
-  API are not implemented.
+- Export generation runs in the web process, with bounded database batches and
+  temporary files. Requests above 50,000 rows are rejected rather than truncated.
+  XLSX prices that cannot be serialized exactly within Excel's 15 significant
+  digits are stored as text; `Price exact`
+  always preserves the decimal string. CSV uses UTF-8 with a BOM and semicolons;
+  import price columns as text when exact precision is needed. See the
+  [export guide](docs/components/exports.md) for details.
+- Arbitrary page-content change tracking, CSV/Excel import, and a public API are
+  not implemented.

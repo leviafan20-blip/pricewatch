@@ -7,16 +7,17 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import OuterRef, Q, Subquery
-from django.http import Http404
+from django.db.models import OuterRef, Subquery
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from . import analytics
 from .checks import CheckQueueError, archive_monitor, create_monitor, request_check, update_monitor
-from .forms import HistoryFilterForm, MonitorForm, ScheduleForm
+from .exports import CONTENT_TYPES, MAX_EXPORT_ROWS, ExportTooLarge, build_export
+from .forms import MonitorForm, ScheduleForm
+from .history import history_filters, history_rows
 from .models import CheckRun, Monitor, Observation
 from .scheduling import configure_schedule
 from .tasks import publish_check
@@ -86,35 +87,23 @@ def _detail_context(monitor, *, page=None, schedule_form=None, query=None):
     }
     context.update(_history_context([monitor], query or {}))
     if context.get("history_window"):
-        history = analytics.observations_in_window([monitor], context["history_window"])
-        if context["currency"]:
-            history = history.filter(Q(currency=context["currency"]) | Q(price=None))
+        history = history_rows([monitor], context["history_window"], context["currency"])
         context["observation_page"] = Paginator(history.order_by("-observed_at", "-pk"), 20).get_page((query or {}).get("obs_page"))
     return context
 
 
 def _history_context(monitors, query, *, comparing=False):
     """Normalize bounded GET filters before accessing analytics; invalid input shows no data."""
-    now = timezone.now()
-    all_rows = analytics.observations_in_window(monitors, analytics.history_window({"period": "all"}, now=now))
-    currencies = analytics.available_currencies(all_rows)
-    data = query.copy()
-    data.setdefault("period", "30")
-    data.setdefault("currency", currencies[0] if len(currencies) == 1 else "")
-    form = HistoryFilterForm(data, currencies=currencies)
-    context = {"history_form": form, "analyses": [], "currency": "", "chart_data": analytics.chart_payload([])}
-    if not form.is_valid():
+    context = history_filters(monitors, query)
+    context.update(analyses=[], chart_data=analytics.chart_payload([]))
+    form = context["history_form"]
+    if "history_window" not in context:
         return context
-    currency = form.cleaned_data["currency"]
-    if currencies and not currency:
-        form.add_error("currency", "Выберите одну валюту из истории; конвертация не выполняется.")
-        return context
-    window = analytics.history_window(form.cleaned_data, now=now)
-    analyses = analytics.analyze_monitors(monitors, window, currency)
+    analyses = analytics.analyze_monitors(monitors, context["history_window"], context["currency"])
     if comparing and analyses and any(not item["statistics"]["count"] for item in analyses):
         form.add_error(None, "Для сравнения у каждого выбранного мониторинга должна быть цена в одной валюте за выбранный период.")
         return context
-    context.update(history_window=window, currency=currency, analyses=analyses,
+    context.update(analyses=analyses,
                    chart_data=analytics.chart_payload(analyses), has_prices=any(item["statistics"]["count"] for item in analyses))
     return context
 
@@ -125,6 +114,32 @@ def _history_context(monitors, query, *, comparing=False):
 def monitor_detail(request, pk):
     monitor = _owned_monitor(request, pk)
     return render(request, "monitoring/detail.html", _detail_context(monitor, page=request.GET.get("page"), query=request.GET))
+
+
+@login_required
+@never_cache
+@require_GET
+def export_history(request, pk=None):
+    monitor = _owned_monitor(request, pk) if pk is not None else None
+    monitors = [monitor] if monitor else Monitor.objects.filter(owner=request.user)
+    context = history_filters(monitors, request.GET, require_currency=monitor is not None)
+    context.update(monitor=monitor, export_limit=MAX_EXPORT_ROWS)
+    form = context["history_form"]
+    file_format = request.GET.get("format")
+    if file_format is not None:
+        if file_format not in CONTENT_TYPES:
+            form.add_error(None, "Выберите CSV или XLSX.")
+        if not form.errors:
+            rows = history_rows(monitors, context["history_window"], context["currency"])
+            try:
+                output = build_export(rows, file_format)
+            except ExportTooLarge:
+                form.add_error(None, f"Экспорт ограничен {MAX_EXPORT_ROWS} наблюдениями. Уменьшите период или задайте даты.")
+            else:
+                scope = str(monitor.pk) if monitor else "history"
+                return FileResponse(output, as_attachment=True, filename=f"pricewatch-{scope}.{file_format}",
+                                    content_type=CONTENT_TYPES[file_format])
+    return render(request, "monitoring/export.html", context, status=400 if form.errors else 200)
 
 
 @login_required
