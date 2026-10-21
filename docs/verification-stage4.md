@@ -1,5 +1,9 @@
 # Проверка этапа 4 — расписание PriceWatch
 
+Historical report: the commands below used the former shared test database.
+Standard pytest now uses `test_pricewatch_pytest`; integration and demo setup
+uses `test_pricewatch`. Follow [the current runbook](runbook.md) for new runs.
+
 Проверено 20 октября 2026 года в Docker с настоящими PostgreSQL, Redis,
 Celery prefork worker и Celery Beat. Обращений к реальным магазинам не было.
 

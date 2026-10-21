@@ -212,7 +212,7 @@ def test_xlsx_typed_values_and_exact_high_precision_fallback(owner_client, monit
         else:
             assert exact.attrib["t"] == "inlineStr" and Decimal(cell_value(exact)) == Decimal(value)
             assert Decimal(cell_value(price)) == Decimal(value)
-            assert (price.attrib.get("t") == "inlineStr") == (index in (6, 7, 8))
+            assert (price.attrib.get("t") == "inlineStr") == (index in (6, 7))
     assert sheet.find("s:sheetViews/s:sheetView/s:pane", NS).attrib["ySplit"] == "1"
     assert sheet.find("s:autoFilter", NS).attrib["ref"] == "A1:L9"
     assert len(sheet.findall("s:cols/s:col", NS)) > 1

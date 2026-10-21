@@ -90,13 +90,13 @@ class CheckRun(models.Model):
     scheduled_for = models.DateTimeField(null=True, blank=True)
     next_delivery_at = models.DateTimeField(null=True, blank=True)
     delivery_attempts = models.PositiveSmallIntegerField(default=0)
+    execution_attempts = models.PositiveSmallIntegerField(default=0, editable=False)
 
     class Meta:
         ordering = ["-queued_at", "-pk"]
         constraints = [
             models.UniqueConstraint(fields=["monitor"], condition=Q(status__in=["queued", "running"]), name="one_active_check_per_monitor"),
             models.UniqueConstraint(fields=["monitor", "scheduled_for"], condition=Q(scheduled_for__isnull=False), name="one_scheduled_run_per_slot"),
-            models.CheckConstraint(condition=Q(scheduled_for__isnull=False) | Q(next_delivery_at__isnull=True, delivery_attempts=0), name="check_delivery_only_scheduled"),
             models.CheckConstraint(condition=Q(next_delivery_at__isnull=True) | Q(status__in=["queued", "running"]), name="check_delivery_only_active"),
             models.CheckConstraint(condition=(
                 Q(status="queued", started_at__isnull=True, finished_at__isnull=True, claim_token__isnull=True)

@@ -84,6 +84,13 @@ CheckRun хранит исходный плановый слот и ограни
 с advisory lock, общими доменными лимитами и `inspect_url()`.
 Пауза/архив проверяются и диспетчером, и worker перед сетью.
 
+The same delivery reservation now covers manual CheckRun records, independently
+of automatic scheduling. Publication is limited to three reservations per run.
+A separate `execution_attempts` counter, committed under the worker's existing
+locks before network I/O, allows at most three executions. Broker redelivery
+does not bypass this budget. Terminal results, observation uniqueness, and
+notification atomicity retain their existing protections.
+
 Celery и PostgreSQL используют UTC, шаблоны — текущий часовой пояс Django.
 Beat хранит состояние таймера в отдельном volume, PID — во временной памяти.
 Данные пользователя и сроки не зависят от файла Beat. Устройство, гарантии

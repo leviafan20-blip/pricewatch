@@ -65,6 +65,19 @@ docker compose exec web python manage.py collectstatic --noinput
 В контейнере явно указывайте `--ds=config.settings.test`, чтобы локальные
 настройки из окружения не переопределили тестовый режим.
 
+Database names are deliberately separate:
+
+| Mode | Database |
+| --- | --- |
+| Local web, worker, and Beat | `POSTGRES_DB`, normally `pricewatch` |
+| Standard pytest (`config.settings.test`) | `test_pricewatch_pytest` |
+| Integration pytest and browser demos (`config.settings.integration`) | `test_pricewatch` |
+
+`--reuse-db` preserves the selected test database between runs; it does not
+remove existing data before the first test. Standard tests do not prepare or
+clear the integration/demo database. The PostgreSQL role needs `CREATEDB` for
+the first pytest run; the Compose role already has this permission.
+
 После будущего изменения моделей сначала создайте и проверьте миграцию,
 затем примените её `docker compose run --rm migrate`. Не создавайте миграции
 автоматически при запуске контейнера.
@@ -94,8 +107,27 @@ Worker и Beat не перезапускаются Django autoreload. При и�
 перезапускайте их явно. Redis не публикует порт, хранит очередь в `redis_data`
 с AOF; результаты проверок хранятся в PostgreSQL.
 
-Застрявшее задание можно повторно отправить кнопкой на странице товара.
-Используется тот же CheckRun, история не дублируется. Не меняйте статус через SQL.
+Manual and scheduled checks both reserve publication for five minutes. Beat
+automatically recovers lost publication even with automatic scheduling disabled.
+The retry button respects that reservation and reuses the same CheckRun.
+There are at most three publications and, separately, three committed execution
+claims per CheckRun. `queue_delivery_timeout` means delivery was exhausted;
+`execution_attempts_exhausted` means interrupted executions exhausted the budget.
+Check Worker, Beat, Redis, and PostgreSQL before starting a new attempt. History
+is preserved; do not change statuses through SQL.
+
+When applying migration `0006_checkrun_delivery_recovery`, stop the main Beat
+and worker before migrating, then start them with the updated code:
+
+```powershell
+docker compose stop beat worker
+docker compose exec web python manage.py migrate --noinput
+docker compose start worker beat
+```
+
+Prepare the integration database separately with its services stopped, as below.
+For diagnosis, inspect `status`, `delivery_attempts`, `execution_attempts`, and
+`next_delivery_at` on CheckRun, plus `docker compose logs --tail=100 worker beat`.
 При `queue_unavailable` проверьте Redis/worker; сетевые и parser-коды относятся
 к безопасной загрузке этапа 2. Полное объяснение: `components/monitoring.md`.
 
@@ -103,7 +135,7 @@ Worker и Beat не перезапускаются Django autoreload. При и�
 
 ```powershell
 docker compose --profile integration stop integration-beat integration-web integration-worker fixture
-docker compose exec web python -m pytest --ds=config.settings.test --reuse-db --create-db
+docker compose exec -e PRICEWATCH_INTEGRATION=1 -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m pytest tests/test_health.py::test_readiness_reports_database_available --ds=config.settings.integration --reuse-db
 docker compose --profile integration up -d --wait fixture integration-worker integration-beat
 docker compose exec -e PRICEWATCH_INTEGRATION=1 -e PRICEWATCH_RUN_INTEGRATION=1 -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m pytest tests/integration --ds=config.settings.integration --reuse-db
 ```
@@ -112,6 +144,14 @@ docker compose exec -e PRICEWATCH_INTEGRATION=1 -e PRICEWATCH_RUN_INTEGRATION=1 
 очередь. Контролируемый HTTP-сервер не имеет опубликованного порта. Его
 тестовый TCP-адаптер загружается только явной командой integration-worker;
 обычный worker сохраняет все ограничения URL/DNS/IP.
+
+The readiness test above creates the integration database if missing and applies
+migrations with `--reuse-db`; its database work is rolled back, so existing demo
+rows are preserved. Run it with the integration services stopped. Unlike this
+preparation step, the full integration suite uses transaction tests and clears
+`test_pricewatch` records. Do not run it while using or preserving a browser demo.
+Standard pytest only clears its own `test_pricewatch_pytest` data. No database
+recreation or volume removal is needed for this separation.
 
 ## Автоматическое расписание
 
@@ -158,10 +198,12 @@ docker compose down
 Обычная остановка сохраняет volume. Не добавляйте `--volumes`, если нужно
 сохранить учётные записи и будущую историю наблюдений.
 
-## Если Docker Desktop не стартует
+## If Docker Desktop does not start
 
-Сначала проверьте работоспособность самого Docker (`docker info`), затем
-Linux engine и WSL в Docker Desktop. Ошибка daemon возникает до выполнения
-Compose. Не используйте factory reset и не удаляйте Docker volumes для диагностики.
-Пока Docker недоступен, возможен запуск тестов на явно выбранном SQLite fallback
-из README или на отдельно запущенном PostgreSQL.
+First check Docker itself (`docker info`), then the Linux engine and WSL in
+Docker Desktop. A daemon error occurs before Compose can start containers.
+Do not use a factory reset or delete Docker volumes for troubleshooting.
+
+The full test suite requires PostgreSQL. If Docker is unavailable, restore the
+Docker environment before running the commands above. SQLite cannot replace
+PostgreSQL for locking and concurrency checks.

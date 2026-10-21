@@ -165,6 +165,24 @@ def test_beat_recovers_persisted_unpublished_reservation(user, token, broker):
     assert broker.get(counter_key(token, "requests")) == "1"
 
 
+def test_beat_recovers_manual_commit_gap_with_schedule_disabled(user, token, broker):
+    monitor = make_monitor(user, token)
+    # No message reaches Redis. Only Beat can repair this; there is no repeat POST.
+    run = checks.request_check(monitor.pk, user=user, publish=lambda _: None).run
+    CheckRun.objects.filter(pk=run.pk).update(next_delivery_at=timezone.now() - timedelta(seconds=1))
+    completed = wait_run(monitor)
+    assert completed.pk == run.pk and completed.scheduled_for is None
+    assert completed.delivery_attempts == 2 and completed.execution_attempts == 1
+    assert not monitor.auto_enabled and monitor.next_check_at is None
+    assert monitor.check_runs.count() == Observation.objects.filter(check_run=run).count() == 1
+    assert broker.get(counter_key(token, "requests")) == "1"
+    publish_check(str(run.pk))
+    time.sleep(1)
+    completed.refresh_from_db()
+    assert completed.execution_attempts == 1
+    assert Observation.objects.filter(check_run=run).count() == 1
+
+
 def test_automatic_parser_error_preserves_previous_price(user, token, broker):
     monitor = make_monitor(user, token)
     schedule(monitor, user)

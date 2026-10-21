@@ -50,16 +50,19 @@ CheckRun получает `scheduled_for`, `next_delivery_at`, `delivery_attempt
 создания даже после завершения попытки. Существующее ограничение одного
 `queued/running` на Monitor продолжает действовать.
 
-`next_delivery_at` и счётчик используются только для плановых попыток.
-У завершённых попыток дата доставки очищается. Observation не получает
-новых полей и не изменяется диспетчером.
+`next_delivery_at` and `delivery_attempts` apply to both manual and scheduled
+attempts. `execution_attempts` counts committed worker claims separately.
+Terminal attempts clear their delivery date. Observation has no new fields
+and the dispatcher does not alter observation history.
 
 ## Как взаимодействуют процессы
 
 1. **Beat** отправляет короткое пробуждение `monitoring.dispatch_due_checks`
    в **Redis**. Его срок годности — 55 секунд при интервале 60 секунд.
-2. **Worker** выполняет диспетчер. Он находит включённые неархивные Monitor
-   активных пользователей с наступившим сроком либо незавершённой доставкой.
+2. **Worker** runs the dispatcher. It selects enabled schedules that are due,
+   plus expired delivery reservations, including manual checks with scheduling
+   disabled. Archived monitors, inactive owners, and paused scheduled attempts
+   cannot restart; orphaned work is cancelled once its execution lock is free.
 3. В короткой транзакции диспетчер берёт до 20 строк Monitor через
    `SELECT ... FOR UPDATE OF monitor SKIP LOCKED`. Уже занятые строки
    пропускаются; параллельный диспетчер не создаёт второй CheckRun.
@@ -126,6 +129,15 @@ CheckRun получает `scheduled_for`, `next_delivery_at`, `delivery_attempt
 `queue_unavailable`, не переписывая уже начавшуюся/успешную проверку.
 Прежние Observation при этом не затрагиваются.
 
+This publication limit includes the initial reservation, for both manual and
+scheduled runs; it is not three additional retries. Broker redeliveries do not
+increase `delivery_attempts`. Instead, each committed worker claim increments
+`execution_attempts` before network I/O, with a separate maximum of three.
+After three interrupted claims, the next delivery or dispatcher recovery marks
+`execution_attempts_exhausted` without another fetch. The third execution can
+still finish successfully. Both limits clear delivery reservations on failure
+and preserve existing observations and notifications.
+
 Просроченные пробуждения Beat отбрасываются Celery по `expires`. Redis может
 временно хранить эти короткие сообщения до чтения worker; это не серия
 пропущенных товарных проверок. За один вызов диспетчер обрабатывает не более
@@ -162,17 +174,18 @@ URL и HTML туда не записываются. Не исправляйте 
 
 ```powershell
 docker compose --profile integration stop integration-beat integration-web integration-worker fixture
-docker compose exec web python -m pytest --ds=config.settings.test --reuse-db --create-db
+docker compose exec -e PRICEWATCH_INTEGRATION=1 -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m pytest tests/test_health.py::test_readiness_reports_database_available --ds=config.settings.integration --reuse-db
 docker compose --profile integration up -d --wait fixture integration-worker integration-beat
 docker compose exec -e PRICEWATCH_INTEGRATION=1 -e PRICEWATCH_RUN_INTEGRATION=1 -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m pytest tests/integration --ds=config.settings.integration --reuse-db
 ```
 
-Тестовая БД `test_pricewatch` принадлежит тестам; pytest очищает её записи.
-Она не предназначена для пользовательских данных. Рабочая БД не очищается.
-`--create-db` в команде подготовки пересоздаёт только эту тестовую БД после
-браузерной проверки. Сначала остановите все тестовые сервисы. Для последующих
-обычных прогонов без ручного наполнения достаточно `--reuse-db`.
-Не запускайте одновременно разные прогоны с одной тестовой БД.
+Standard pytest uses `test_pricewatch_pytest`. Integration tests and browser
+demos share `test_pricewatch`, never the application database. Stop integration
+services before the readiness preparation above; it creates or migrates that
+database without recreating it or clearing demo rows. The full integration suite
+does clear its records, so do not run it while preserving a browser demo. Always
+use `--reuse-db` with the integration worker and do not run two suites against
+the same database at once.
 
 Профиль использует Redis DB 15, отдельную очередь и контролируемый HTTP-сервер.
 Тестовый Beat тикает раз в 2 секунды, но интервалы Monitor остаются часовыми.

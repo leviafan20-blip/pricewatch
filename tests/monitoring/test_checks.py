@@ -61,6 +61,8 @@ def test_publish_happens_after_commit_and_repeated_post_reuses_run(monitor, user
     first = checks.request_check(monitor.pk, user=user, publish=publish)
     second = checks.request_check(monitor.pk, user=user, publish=publish)
     assert first.created and not second.created
+    assert first.published and not second.published
+    assert first.run.delivery_attempts == 1 and first.run.execution_attempts == 0
     assert first.run.pk == second.run.pk
     assert CheckRun.objects.count() == 1
 
@@ -99,6 +101,8 @@ def test_success_is_atomic_and_duplicate_delivery_has_no_effect(monitor, user, p
     assert checks.execute_check(str(run.pk)).status == "succeeded"
     assert checks.execute_check(str(run.pk)).status == "succeeded"
     assert inspect.call_count == 1
+    run.refresh_from_db()
+    assert run.execution_attempts == 1
     observation = Observation.objects.get()
     assert observation.price == Decimal("1299.95")
     assert observation.check_run_id == run.pk

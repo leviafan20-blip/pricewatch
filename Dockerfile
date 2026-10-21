@@ -11,7 +11,8 @@ RUN python -m pip install --no-cache-dir -r requirements/dev.txt \
     && useradd --system --gid pricewatch --create-home pricewatch
 
 COPY --chown=pricewatch:pricewatch . /app/
-RUN install -d -o pricewatch -g pricewatch /var/lib/pricewatch/beat
+RUN chown pricewatch:pricewatch /app \
+    && install -d -o pricewatch -g pricewatch /var/lib/pricewatch/beat
 USER pricewatch
 
 EXPOSE 8000

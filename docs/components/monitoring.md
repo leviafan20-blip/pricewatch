@@ -75,16 +75,29 @@ Monitor даже при ошибке прикладного кода. Огран
 
 ## Повторы и восстановление
 
-PostgreSQL и Redis не образуют общую транзакцию. Между фиксацией попытки и
-публикацией процесс может завершиться. Вместо отдельной outbox-системы на этом
-этапе используется явное восстановление: кнопка «Повторить отправку» публикует
-тот же UUID. Завершённая попытка не загружается повторно; Observation не дублируется.
+PostgreSQL and Redis do not share a transaction. Before publication, every
+manual or scheduled CheckRun reserves delivery for five minutes in PostgreSQL.
+Beat's existing dispatcher recovers expired reservations using the same UUID,
+including manual checks with automatic scheduling disabled. The retry button
+respects the same reservation; repeated POSTs do not publish during that window.
+There are at most three reserved publications (`delivery_attempts`) per CheckRun.
+A live advisory lock defers recovery without spending another publication.
 
-Задания подтверждаются после выполнения (`acks_late`); при гибели дочернего
-worker включена повторная доставка. Если попытка осталась `running`, но advisory
-lock больше никто не держит, worker может продолжить эту же попытку с новым
-токеном. Числового lease с автоматическим истечением для Monitor нет: долгий
-живой запрос не должен неожиданно разрешить второй запрос.
+Tasks use `acks_late` and `reject_on_worker_lost`. A worker may reclaim an
+orphaned `running` attempt only after acquiring its advisory lock. Each claim
+commits an increment of `execution_attempts` before `inspect_url()` starts.
+At most three executions are allowed, independently of publication count.
+After three interrupted executions, the next delivery or recovery pass records
+`failed / execution_attempts_exhausted`, without another parser call. A third
+execution may still succeed. Terminal and cancelled deliveries are no-ops;
+concurrent deliveries that cannot acquire the lock spend no execution attempt.
+Observation and notification writes remain atomic and protected by claim tokens.
+
+Migration `0006_checkrun_delivery_recovery` makes legacy active manual checks
+eligible for recovery. It counts a persisted `running` claim as one execution;
+earlier crashes cannot be reconstructed. Finished runs and observation history
+are left intact. Reversing the migration clears manual delivery metadata to
+restore the previous database constraint, without changing results or snapshots.
 
 Проверки выполняются не более 70 секунд до мягкого ограничения и 80 до жёсткого.
 Сетевая часть сохраняет общий предел 45 секунд. Visibility timeout Redis — 300
@@ -142,7 +155,8 @@ docker compose restart worker
 ```
 
 Если задание долго в очереди, сначала проверьте worker, Redis и его очередь.
-Затем нажмите «Повторить отправку». Не исправляйте статус вручную через SQL:
+Check Beat as well: manual recovery requires its dispatcher. The retry button
+can resend after the five-minute reservation expires. Не исправляйте статус вручную через SQL:
 это может нарушить согласованность данных. `queued/running` не означает,
 что получена новая цена; источником результата остаётся Observation.
 Сообщение Celery `Task ... succeeded` означает, что доставка обработана;
@@ -167,8 +181,10 @@ fixture на внутреннем порту 8080. Производственн�
 свою БД и Redis DB 0. Тесты не требуют реального магазина.
 
 ```powershell
-# Сначала создать/обновить сохраняемую тестовую БД стандартными тестами.
-docker compose exec web python -m pytest --ds=config.settings.test --reuse-db
+# Stop only the integration services, then prepare their separate database.
+docker compose --profile integration stop integration-beat integration-web integration-worker fixture
+
+docker compose exec -e PRICEWATCH_INTEGRATION=1 -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m pytest tests/test_health.py::test_readiness_reports_database_available --ds=config.settings.integration --reuse-db
 docker compose --profile integration up -d --wait fixture integration-worker integration-beat
 docker compose exec -e PRICEWATCH_INTEGRATION=1 -e PRICEWATCH_RUN_INTEGRATION=1 -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m pytest tests/integration --ds=config.settings.integration --reuse-db
 ```
@@ -184,6 +200,10 @@ worker не импортирует адаптер; разрешения внут
 запускаются отдельно; Celery eager не используется. Не запускайте два прогона
 с одной тестовой БД одновременно. После запуска тестовых сервисов используйте
 `--reuse-db`, чтобы не пытаться удалить БД, к которой подключён worker.
+
+Standard pytest uses `test_pricewatch_pytest`; integration services, integration
+tests, and browser demos use `test_pricewatch`. The readiness preparation above
+preserves existing demo rows, but the full integration suite clears them.
 
 Для просмотра изолированного интерфейса:
 
@@ -210,10 +230,19 @@ docker compose --profile integration stop integration-beat integration-web integ
 Для реальных URL администратор задаёт точные `SCRAPING_ALLOWED_HOSTS`; по
 умолчанию список пуст. CSS-селекторы настраиваются в форме, нестандартные
 словари наличия — через Python-сервис; их редактора в интерфейсе пока нет.
-Для ручных заданий восстановление остаётся ручным. Плановые задания с этапа 4
-восстанавливаются диспетчером с ограничением количества отправок.
-В случае сбоя БД записать ошибку сразу невозможно; после восстановления
-соединения повторная отправка позволяет продолжить попытку.
+Manual and scheduled attempts share bounded automatic delivery recovery.
+Recovery requires PostgreSQL, Redis, a worker, and Beat to be available. A crash
+before the execution claim commits cannot be counted; a crash after commit but
+before network I/O conservatively spends an execution. If PostgreSQL is down,
+the error cannot be persisted until it recovers. Exhausted attempts stay failed;
+a new explicit check or the next scheduled cycle creates a new CheckRun.
 Advisory locks предполагают прямые сессии PostgreSQL. Redis хранит очередь
 в AOF-volume без eviction; регулярные резервные копии и публичное развёртывание
 не входят в этот этап.
+
+The integration worker has a guarded `worker-lost` fixture URL that sends
+`SIGKILL` to its own prefork child after the claim is committed. It exists only
+under `tests/integration/worker.py`; normal workers never install this adapter.
+The integration test verifies three real child losses, terminal redelivery,
+and preservation of earlier observations and notifications. Ordinary tests
+inject process loss and exercise PostgreSQL locks, budgets, and migration data.

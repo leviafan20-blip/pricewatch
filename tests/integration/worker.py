@@ -6,9 +6,12 @@ Only the TCP endpoint is redirected to our controlled Docker HTTP fixture.
 
 from dataclasses import replace
 import os
+import re
+import signal
 import socket
 
 import httpcore
+import redis
 
 if os.environ.get("PRICEWATCH_INTEGRATION") != "1":
     raise RuntimeError("This worker is restricted to PRICEWATCH_INTEGRATION=1")
@@ -61,3 +64,21 @@ def fixture_loader(policy):
 # their original DNS resolver, transport and domain intervals.
 safety.socket.getaddrinfo = fixture_dns
 services.PageLoader = fixture_loader
+
+_original_inspect = services.inspect_url
+
+
+def fixture_inspect(url, config):
+    # Explicit fault injection only in this guarded integration worker. The
+    # CheckRun claim is already committed before inspect_url is called.
+    match = re.fullmatch(r"http://shop\.pricewatch\.example/products/([a-f0-9]{32})/worker-lost", url)
+    if match:
+        with redis.Redis.from_url(os.environ["CELERY_BROKER_URL"], decode_responses=True) as client:
+            key = f"pricewatch:integration:{match[1]}:worker_lost"
+            client.incr(key)
+            client.expire(key, 3600)
+        os.kill(os.getpid(), signal.SIGKILL)
+    return _original_inspect(url, config)
+
+
+services.inspect_url = fixture_inspect

@@ -63,7 +63,7 @@ def test_check_post_enqueues_and_reuses_existing(owner_client, monitor, monkeypa
     assert run.status == "queued"
     assert owner_client.post(url).status_code == 302
     assert CheckRun.objects.count() == 1
-    assert publish.call_count == 2
+    assert publish.call_count == 1
     assert publish.call_args.args == (str(run.pk),)
     page = owner_client.get(reverse("monitoring:detail", args=[monitor.pk]))
     assert "Повторить отправку" in page.content.decode()

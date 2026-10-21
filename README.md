@@ -144,16 +144,21 @@ docker compose exec web python -m pytest --ds=config.settings.test --reuse-db --
 ```
 
 Select the test settings explicitly: the web container normally uses local
-settings. Pytest uses a separate PostgreSQL test database; `--reuse-db` keeps it
-between runs. The suite covers authentication, user isolation, extraction, URL
-safety, task handling, scheduling, analytics, and notifications. Scraping tests
-use local fixtures and mocked network responses rather than real stores.
+settings. Standard pytest uses `test_pricewatch_pytest`; `--reuse-db` keeps it
+between runs. It does not clear demo data in `test_pricewatch`. The PostgreSQL
+role needs permission to create the test database on its first run; the local
+Compose role already has it. The suite covers authentication, user isolation,
+extraction, URL safety, task handling, scheduling, analytics, and notifications.
+Scraping tests use local fixtures and mocked network responses rather than real stores.
 
 Tests requiring live Celery services are skipped in the standard run. The
 [runbook](docs/runbook.md) describes the opt-in integration profile,
 which uses PostgreSQL, Redis, a real worker and Beat, and a controlled HTTP server.
-Stop that profile before running the standard suite, and run suites sequentially:
-the integration profile shares the test database, not the application database.
+That profile and the browser demos use `test_pricewatch`, separate from both
+standard pytest and the application database (`pricewatch` by default). Prepare
+it separately as described in the runbook. Integration tests and browser demos
+share data storage: run them sequentially, and stop the integration services
+before preparing or testing their database. Integration tests clear its data.
 
 GitHub Actions runs Django checks, migration checks, tests with PostgreSQL, and
 static file collection. Integration tests require the separate Docker profile.

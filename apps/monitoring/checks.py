@@ -24,6 +24,12 @@ from .scraping.types import ExtractionConfig
 logger = logging.getLogger(__name__)
 ACTIVE_STATUSES = (CheckRun.Status.QUEUED, CheckRun.Status.RUNNING)
 DELIVERY_RETRY_SECONDS = 300
+MAX_DELIVERY_ATTEMPTS = 3
+MAX_EXECUTION_ATTEMPTS = 3
+EXECUTION_LIMIT_ERROR = (
+    "execution_attempts_exhausted",
+    "Проверка прервана после трёх запусков. Повторите проверку позднее.",
+)
 
 
 @dataclass(frozen=True)
@@ -159,13 +165,13 @@ def _get_or_create_run_locked(monitor, *, scheduled_for=None, now=None):
         monitor=monitor, queued_at=now, url_snapshot=monitor.url,
         extraction_config_snapshot=monitor.extraction_config,
         scheduled_for=scheduled_for,
-        next_delivery_at=now if scheduled_for is not None else None,
+        next_delivery_at=now,
     ), True
 
 
 def _reserve_delivery_locked(run, now):
     """Persist the reservation BEFORE contacting Redis; recovery reuses this UUID."""
-    if run.status not in ACTIVE_STATUSES or run.scheduled_for is None:
+    if run.status not in ACTIVE_STATUSES or run.delivery_attempts >= MAX_DELIVERY_ATTEMPTS:
         return False
     if run.next_delivery_at is not None and run.next_delivery_at > now:
         return False
@@ -195,7 +201,7 @@ def _publish_run(run, publish):
 
 
 def request_check(monitor_id, *, user, publish):
-    """Commit a durable attempt, then publish its id; repeat POST repairs delivery.
+    """Reserve a durable delivery, then publish outside the transaction.
 
     Every delivery uses the same active run id. Broker acknowledgement cannot be
     atomic with PostgreSQL, so repeat delivery is explicitly safe at the worker.
@@ -203,7 +209,7 @@ def request_check(monitor_id, *, user, publish):
     with transaction.atomic(durable=True):
         monitor = Monitor.objects.select_for_update().get(pk=monitor_id, owner=user, archived_at__isnull=True)
         run, created = _get_or_create_run_locked(monitor)
-        if run.scheduled_for is not None and not _reserve_delivery_locked(run, timezone.now()):
+        if not _reserve_delivery_locked(run, timezone.now()):
             return CheckRequest(run=run, created=created, published=False)
     _publish_run(run, publish)
     return CheckRequest(run=run, created=created, published=True)
@@ -237,8 +243,8 @@ def _claim_run(run_id, monitor_id):
         run = CheckRun.objects.select_for_update().get(pk=run_id)
         if run.status not in ACTIVE_STATUSES:
             return run, None
-        if monitor.archived_at is not None or (
-            run.scheduled_for is not None and (not monitor.auto_enabled or not monitor.owner.is_active)
+        if monitor.archived_at is not None or not monitor.owner.is_active or (
+            run.scheduled_for is not None and not monitor.auto_enabled
         ):
             run.status = CheckRun.Status.CANCELLED
             run.finished_at = timezone.now()
@@ -246,15 +252,23 @@ def _claim_run(run_id, monitor_id):
             run.next_delivery_at = None
             run.save(update_fields=["status", "finished_at", "claim_token", "next_delivery_at"])
             return run, None
+        if run.execution_attempts >= MAX_EXECUTION_ATTEMPTS:
+            run.status = CheckRun.Status.FAILED
+            run.finished_at = timezone.now()
+            run.claim_token = None
+            run.next_delivery_at = None
+            run.error_code, run.error_message = EXECUTION_LIMIT_ERROR
+            run.save(update_fields=["status", "finished_at", "claim_token", "next_delivery_at", "error_code", "error_message"])
+            return run, None
         # Running + acquired session lock means the old worker no longer owns
         # its session. Reclaim this same attempt, rather than make a new result.
         token = uuid.uuid4()
         run.status = CheckRun.Status.RUNNING
         run.started_at = timezone.now()
         run.claim_token = token
-        if run.scheduled_for is not None:
-            run.next_delivery_at = run.started_at + timedelta(seconds=DELIVERY_RETRY_SECONDS)
-        run.save(update_fields=["status", "started_at", "claim_token", "next_delivery_at"])
+        run.execution_attempts += 1
+        run.next_delivery_at = run.started_at + timedelta(seconds=DELIVERY_RETRY_SECONDS)
+        run.save(update_fields=["status", "started_at", "claim_token", "next_delivery_at", "execution_attempts"])
         return run, token
 
 

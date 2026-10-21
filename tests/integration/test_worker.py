@@ -1,6 +1,7 @@
 """Real broker + prefork worker + PostgreSQL + controlled HTTP, never eager."""
 
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 from decimal import Decimal
 import os
 import threading
@@ -10,12 +11,14 @@ import uuid
 from django.conf import settings
 from django.db import close_old_connections, connection
 from django.urls import reverse
+from django.utils import timezone
 import pytest
 import redis
 
 from apps.monitoring.checks import CheckQueueError, _claim_run, archive_monitor, create_monitor, request_check, update_monitor
 from apps.monitoring.models import CheckRun, Observation
 from apps.monitoring.tasks import execute_check_task, publish_check
+from apps.notifications.models import Notification
 from config.celery import app
 from tests.integration.http_server import counter_key
 
@@ -129,6 +132,7 @@ def test_terminal_redelivery_and_lost_publish_recovery(user, token, broker):
     # Simulate web death between committing PostgreSQL and publishing to Redis.
     first = request_check(monitor.pk, user=user, publish=lambda _: None).run
     assert first.status == "queued"
+    CheckRun.objects.filter(pk=first.pk).update(next_delivery_at=timezone.now() - timedelta(seconds=1))
     repaired = request_check(monitor.pk, user=user, publish=publish_check)
     assert not repaired.created and repaired.run.pk == first.pk
     assert completed(first).status == "succeeded"
@@ -177,11 +181,36 @@ def test_running_attempt_without_worker_lock_can_be_recovered(user, token, broke
     monitor = monitor_for(user, token)
     run = request_check(monitor.pk, user=user, publish=lambda _: None).run
     _claim_run(run.pk, monitor.pk)
+    CheckRun.objects.filter(pk=run.pk).update(next_delivery_at=timezone.now() - timedelta(seconds=1))
     repaired = request_check(monitor.pk, user=user, publish=publish_check)
     assert not repaired.created and repaired.run.pk == run.pk
     assert completed(run).status == "succeeded"
     assert Observation.objects.filter(check_run=run).count() == 1
     assert int(broker.get(counter_key(token, "requests"))) == 1
+
+
+def test_repeated_sigkill_of_real_prefork_children_is_bounded(user, token, broker):
+    monitor = monitor_for(user, token)
+    previous = completed(request_check(monitor.pk, user=user, publish=publish_check).run).observation
+    observations = list(Observation.objects.values_list("pk", flat=True))
+    notices = list(Notification.objects.values_list("pk", flat=True))
+    update_monitor(monitor.pk, user=user, name=monitor.name, url=fixture_url(token, "worker-lost"))
+    run = request_check(monitor.pk, user=user, publish=publish_check).run
+    failed = wait_for(lambda: CheckRun.objects.filter(pk=run.pk, status="failed").first(), timeout=60)
+    assert failed.error_code == "execution_attempts_exhausted"
+    assert failed.execution_attempts == 3 and failed.delivery_attempts == 1
+    assert failed.claim_token is None and failed.next_delivery_at is None
+    assert broker.get(counter_key(token, "worker_lost")) == "3"
+    assert broker.get(counter_key(token, "requests")) == "1"  # Only the earlier successful fetch.
+    publish_check(str(run.pk))
+    time.sleep(1)
+    failed.refresh_from_db()
+    assert failed.execution_attempts == 3
+    assert broker.get(counter_key(token, "worker_lost")) == "3"
+    assert list(Observation.objects.values_list("pk", flat=True)) == observations
+    assert list(Notification.objects.values_list("pk", flat=True)) == notices
+    previous.refresh_from_db()
+    assert previous.price == Decimal("1299.95")
 
 
 def test_real_unavailable_broker_fails_quickly_without_touching_existing_data(user, token, monkeypatch):

@@ -9,14 +9,14 @@ from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
 from .checks import (
-    ACTIVE_STATUSES, DELIVERY_RETRY_SECONDS, CheckQueueError,
+    ACTIVE_STATUSES, DELIVERY_RETRY_SECONDS, EXECUTION_LIMIT_ERROR,
+    MAX_DELIVERY_ATTEMPTS, MAX_EXECUTION_ATTEMPTS, CheckQueueError,
     _get_or_create_run_locked, _monitor_execution_lock, _publish_run,
     _reserve_delivery_locked,
 )
 from .models import CheckRun, Monitor
 
 logger = logging.getLogger(__name__)
-MAX_DELIVERY_ATTEMPTS = 3
 DISPATCH_BATCH_SIZE = 20
 
 
@@ -65,17 +65,19 @@ def dispatch_due_checks(*, publish, now=None, batch_size=DISPATCH_BATCH_SIZE):
     stats = {"created": 0, "published": 0, "recovered": 0, "coalesced": 0, "failed": 0, "busy": 0}
     reservations = []
     delivery_due = CheckRun.objects.filter(
-        monitor_id=OuterRef("pk"), scheduled_for__isnull=False,
+        monitor_id=OuterRef("pk"),
         status__in=ACTIVE_STATUSES, next_delivery_at__lte=now,
     )
     with transaction.atomic(durable=True):
-        monitors = Monitor.objects.annotate(delivery_due=Exists(delivery_due)).filter(
-            auto_enabled=True, archived_at__isnull=True, owner__is_active=True,
-        ).filter(Q(next_check_at__lte=now) | Q(delivery_due=True)).order_by(
+        monitors = Monitor.objects.select_related("owner").annotate(delivery_due=Exists(delivery_due)).filter(
+            Q(auto_enabled=True, archived_at__isnull=True, owner__is_active=True, next_check_at__lte=now)
+            | Q(delivery_due=True)
+        ).order_by(
             "-delivery_due", "next_check_at", "pk",
         ).select_for_update(of=("self",), skip_locked=True)[:batch_size]
         for monitor in monitors:
-            if monitor.next_check_at <= now:
+            if (monitor.auto_enabled and monitor.archived_at is None and monitor.owner.is_active
+                    and monitor.next_check_at is not None and monitor.next_check_at <= now):
                 due = monitor.next_check_at
                 run, created = _get_or_create_run_locked(monitor, scheduled_for=due, now=now)
                 monitor.next_check_at = now + timedelta(hours=monitor.check_interval_hours)
@@ -87,7 +89,7 @@ def dispatch_due_checks(*, publish, now=None, batch_size=DISPATCH_BATCH_SIZE):
                 monitor.save(update_fields=["next_check_at", "last_scheduled_at", "updated_at"])
             else:
                 run = monitor.check_runs.filter(status__in=ACTIVE_STATUSES).first()
-            if run is None or run.scheduled_for is None or run.status not in ACTIVE_STATUSES:
+            if run is None or run.status not in ACTIVE_STATUSES:
                 continue
             if run.next_delivery_at is not None and run.next_delivery_at > now:
                 continue
@@ -98,13 +100,25 @@ def dispatch_due_checks(*, publish, now=None, batch_size=DISPATCH_BATCH_SIZE):
                     run.save(update_fields=["next_delivery_at"])
                     stats["busy"] += 1
                     continue
-                if run.delivery_attempts >= MAX_DELIVERY_ATTEMPTS:
+                if monitor.archived_at is not None or not monitor.owner.is_active or (
+                    run.scheduled_for is not None and not monitor.auto_enabled
+                ):
+                    run.status = CheckRun.Status.CANCELLED
+                    run.finished_at = now
+                    run.claim_token = None
+                    run.next_delivery_at = None
+                    run.save(update_fields=["status", "finished_at", "claim_token", "next_delivery_at"])
+                    continue
+                if (run.delivery_attempts >= MAX_DELIVERY_ATTEMPTS
+                        or run.execution_attempts >= MAX_EXECUTION_ATTEMPTS):
                     run.status = CheckRun.Status.FAILED
                     run.finished_at = now
                     run.claim_token = None
                     run.next_delivery_at = None
                     run.error_code = "queue_delivery_timeout"
                     run.error_message = "Не удалось подтвердить выполнение задания после повторных отправок."
+                    if run.execution_attempts >= MAX_EXECUTION_ATTEMPTS:
+                        run.error_code, run.error_message = EXECUTION_LIMIT_ERROR
                     run.save(update_fields=["status", "finished_at", "claim_token", "next_delivery_at", "error_code", "error_message"])
                     stats["failed"] += 1
                     continue

@@ -44,9 +44,9 @@ def numeric_price(value):
     # Excel only guarantees 15 significant digits. Do not normalize Decimal using
     # the process precision (the database supports up to 30 digits).
     digits = "".join(str(digit) for digit in value.as_tuple().digits).rstrip("0")
-    # The pinned writer uses %.16G for number XML. Some 15-digit Decimals pick
-    # up a binary rounding digit even there; use text rather than export noise.
-    return len(digits) <= 15 and Decimal("%.16G" % value) == value
+    # Match XlsxWriter's Decimal formatting in number XML without converting
+    # through float, which can introduce a rounding digit before serialization.
+    return len(digits) <= 15 and Decimal(format(value, ".16G")) == value
 
 
 def export_rows(rows):

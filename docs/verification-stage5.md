@@ -1,5 +1,9 @@
 # Проверка этапа 5 — 20 октября 2026
 
+Historical report: standard pytest now uses `test_pricewatch_pytest`, while
+integration tests and demos use `test_pricewatch`. Commands below record the
+former shared setup. Use [the current runbook](runbook.md) for new runs.
+
 ## Что реализовано
 
 - Локальный интерактивный Chart.js 4.5.1 в Django Templates, без React и Node.

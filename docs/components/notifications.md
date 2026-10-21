@@ -140,9 +140,10 @@ docker compose -p pricewatch -f compose.yaml logs --tail=100 worker
 docker compose -p pricewatch -f compose.yaml exec -T web python -m pytest tests/notifications --ds=config.settings.test --reuse-db -q
 ```
 
-Для повторения браузерной демонстрации после стандартных/интеграционных тестов
-должна существовать `test_pricewatch`; отдельные тесты нельзя выполнять
-одновременно с этой демонстрацией:
+For the browser demo, first prepare `test_pricewatch` with the integration
+readiness command in [the runbook](../runbook.md), with integration services
+stopped. Standard pytest uses `test_pricewatch_pytest` and does not prepare the
+demo database. Do not run integration tests during this demonstration:
 
 ```powershell
 docker compose -p pricewatch -f compose.yaml --profile integration up -d --wait fixture integration-worker integration-beat
@@ -163,9 +164,10 @@ docker compose -p pricewatch -f compose.yaml --profile integration up -d --wait 
 docker compose -p pricewatch -f compose.yaml --profile integration stop integration-web integration-beat integration-worker fixture
 ```
 
-Перед следующим полным pytest остановите профиль и при оставшихся demo-данных
-добавьте `--create-db`: пересоздаётся только `test_pricewatch`. Миграции рабочего
-окружения применяются обычным `python manage.py migrate --noinput`.
+Standard pytest leaves the demo database unchanged. Integration tests use the
+same `test_pricewatch` database as this demo and clear its records; stop the
+integration profile and finish the demo before running them. Application
+migrations still use `python manage.py migrate --noinput`.
 
 Для диагностики смотрите `email_status`, `next_email_at`, `email_started_at`,
 `email_sent_at`, `email_error_code` в Django shell и логи worker/beat.

@@ -15,6 +15,7 @@ are required.
 | `templates/monitoring/_analytics.html` | Monitor export buttons in the history filter form |
 | `templates/monitoring/list.html`, `export.html` | User-wide export settings and downloads |
 | `tests/monitoring/test_exports.py` | PostgreSQL selection and independent CSV/ZIP/XML checks |
+| `tests/monitoring/test_export_precision.py` | Database-free XLSX decimal precision regressions |
 | `requirements/base.txt` | Pinned XlsxWriter dependency; no pandas or frontend tooling |
 
 ## User workflow
@@ -88,9 +89,10 @@ rounding and number conversion.
 XLSX has a frozen header row, autofilter, fixed readable column widths, typed
 local datetimes, and a separate timezone column. Its `Price` cells are numeric
 for amounts with at most 15 significant digits that also round-trip unchanged
-through XlsxWriter's numeric serialization. Longer amounts and values that would
-gain a binary rounding digit are stored as text. `Price exact` is always a text
-cell, so the original value survives regardless of Excel's numeric limitations.
+through XlsxWriter's direct Decimal serialization, without an intermediate float.
+Amounts exceeding that precision or failing that check are stored as text.
+`Price exact` is always a text cell, so the original value survives regardless
+of Excel's numeric limitations.
 Numeric display uses at least two decimal places and up to the model's ten
 decimal places. Blank rows are not added to empty exports.
 
@@ -139,8 +141,11 @@ docker compose exec web python -m pytest --ds=config.settings.test --reuse-db --
 Use controlled observations or the existing isolated integration fixture setup
 described in the runbook. Do not add real stores just to verify a download.
 
-For a reproducible browser demo, run the standard tests first to prepare
-`test_pricewatch`, then create the guarded fixtures and start only the test web service:
+For a reproducible browser demo, prepare `test_pricewatch` with the integration
+readiness command in [the runbook](../runbook.md), with integration services
+stopped. Standard pytest uses `test_pricewatch_pytest` and does not prepare or
+clear the demo database. Then create the guarded fixtures and start only the
+test web service:
 
 ```powershell
 docker compose exec -e PRICEWATCH_INTEGRATION=1 -e POSTGRES_DB=test_pricewatch -e CELERY_BROKER_URL=redis://redis:6379/15 web python -m tests.integration.exports_demo
@@ -152,8 +157,9 @@ Open `http://127.0.0.1:8011/` (or `INTEGRATION_WEB_PORT`) and sign in as
 refuses the application database and an existing demo account; it does not fetch
 URLs or queue tasks. It creates 28 observations in one monitor and one archived
 USD observation, including Unicode, a formula-like title, a high-precision price,
-and a missing price. Stop `integration-web` before running tests again. Never use
-this test profile or password in a deployed environment.
+and a missing price. Stop `integration-web` before running integration tests again. Never use
+this test profile or password in a deployed environment. Integration tests share
+`test_pricewatch` with the demo and clear its records; run them separately.
 
 To check manually:
 

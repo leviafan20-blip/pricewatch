@@ -91,9 +91,9 @@ SHA256 `chart.umd.min.js`: `48444a82d4edcb5bec0f1965faacdde18d9c17db3063d042abad
 docker compose -p pricewatch -f compose.yaml exec -T web python -m pytest tests/monitoring/test_analytics.py --ds=config.settings.test --reuse-db -q
 ```
 
-Для воспроизводимой проверки в браузере после тестов (БД `test_pricewatch`
-должна уже существовать; профиль интеграции не должен использоваться другими
-тестами одновременно):
+For the browser demo, prepare `test_pricewatch` with the integration readiness
+command in [the runbook](../runbook.md). Standard pytest prepares only
+`test_pricewatch_pytest`. Do not run integration tests during the demo:
 
 ```powershell
 docker compose -p pricewatch -f compose.yaml exec -T -e PRICEWATCH_INTEGRATION=1 -e POSTGRES_DB=test_pricewatch web python -m tests.integration.analytics_demo
@@ -115,9 +115,9 @@ docker compose -p pricewatch -f compose.yaml --profile integration up -d --wait 
 docker compose -p pricewatch -f compose.yaml --profile integration stop integration-web integration-beat integration-worker fixture
 ```
 
-Перед следующим полным тестированием остановите профиль интеграции. Если
-демонстрационные записи остались в переиспользуемой тестовой БД, добавьте
-`--create-db` к pytest: это пересоздаст **только test_pricewatch**, не рабочую БД.
+Standard pytest uses `test_pricewatch_pytest` and leaves this demo intact.
+Integration tests share `test_pricewatch` with the demo and clear its records;
+stop the integration services before their preparation and run them separately.
 Для отладки Python удобно смотреть `response.context['analyses']` в тесте,
 SQL — CaptureQueriesContext; в браузере — JSON script `price-chart-data`,
 HTTP локальных static-файлов и console. Не правьте сохранённые цены ради графика.

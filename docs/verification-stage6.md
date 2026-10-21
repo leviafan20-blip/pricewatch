@@ -1,5 +1,9 @@
 # Итоговая проверка этапа 6 — 20 октября 2026
 
+Historical report: standard pytest now uses `test_pricewatch_pytest`, while
+integration tests and demos use `test_pricewatch`. Commands below record the
+former shared setup. Use [the current runbook](runbook.md) for new runs.
+
 ## Результат
 
 Этап 6 завершён: правила уведомлений каждого мониторинга, личные настройки
