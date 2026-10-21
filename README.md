@@ -33,6 +33,50 @@ configured for a public production deployment.
   your choice is saved in a browser cookie. Product names and other user data
   keep their original language.
 
+## Screenshots
+
+### Monitors
+
+Tracked products with their latest prices, check results, and schedule settings.
+
+![Monitor list with latest prices and check results](docs/screenshots/monitors.png)
+
+### Dashboard
+
+The account workspace with quick access to existing monitors and product setup.
+
+![Dashboard with links to monitors and product setup](docs/screenshots/project1.png)
+
+### Product Details
+
+The latest known price and availability, manual checks, and automatic monitoring settings.
+
+![Product details with the latest price and monitoring settings](docs/screenshots/project3.png)
+
+### Price History
+
+An interactive price chart with date filters, summary statistics, and CSV/XLSX downloads.
+
+![Price history chart with filters, statistics, and export buttons](docs/screenshots/project4.png)
+
+### Observations
+
+Saved observations for the selected period, including prices, availability, and data sources.
+
+![Observation table with dates, prices, availability, and data sources](docs/screenshots/project5.png)
+
+### Check Logs
+
+Check statuses and technical diagnostics are kept separate from price history.
+
+![Check log with execution statuses and technical diagnostics](docs/screenshots/project6.png)
+
+### Notifications
+
+Price-change notifications show previous and current prices, percentage changes, and read controls.
+
+![Notifications with price changes and mark-as-read controls](docs/screenshots/project7.png)
+
 ## Tech Stack
 
 | Area | Tools |
