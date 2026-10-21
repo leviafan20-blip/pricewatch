@@ -18,6 +18,7 @@
 **/env
 **/__pycache__
 **/*.py[cod]
+**/*.mo
 **/.Python
 **/.tox
 **/.nox

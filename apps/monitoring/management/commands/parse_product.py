@@ -7,6 +7,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.translation import gettext as _
 
 from apps.monitoring.scraping.errors import ScrapingError
 from apps.monitoring.scraping.extractors import extract_product
@@ -19,23 +20,23 @@ def _read_local_html(filename):
     if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", filename) or filename.startswith(
         ("\\\\", "//")
     ):
-        raise CommandError("file_required: Укажите локальный HTML-файл, а не URL или сетевой путь.")
+        raise CommandError(_("file_required: Provide a local HTML file, not a URL or network path."))
     try:
         path = Path(filename).resolve(strict=True)
         if str(path).startswith(("\\\\", "//")):
-            raise CommandError("file_required: Сетевые пути не поддерживаются.")
+            raise CommandError(_("file_required: Network paths are not supported."))
         if not path.is_file():
-            raise CommandError("file_required: Укажите обычный локальный HTML-файл.")
+            raise CommandError(_("file_required: Provide a regular local HTML file."))
         with path.open("rb") as html_file:
             raw = html_file.read(MAX_HTML_BYTES + 1)
     except (OSError, ValueError, RuntimeError) as exc:
-        raise CommandError("file_unreadable: Не удалось прочитать локальный HTML-файл.") from exc
+        raise CommandError(_("file_unreadable: Could not read the local HTML file.")) from exc
     if len(raw) > MAX_HTML_BYTES:
-        raise CommandError("file_too_large: Размер HTML-файла превышает 2 МиБ.")
+        raise CommandError(_("file_too_large: The HTML file exceeds 2 MiB."))
     try:
         return raw.decode("utf-8", errors="strict")
     except UnicodeDecodeError as exc:
-        raise CommandError("file_encoding: HTML-файл должен иметь кодировку UTF-8.") from exc
+        raise CommandError(_("file_encoding: The HTML file must use UTF-8 encoding.")) from exc
 
 
 def _json_default(value):
@@ -45,18 +46,18 @@ def _json_default(value):
 
 
 class Command(BaseCommand):
-    help = "Извлечь данные товара из локального HTML-файла UTF-8 (без сетевых запросов)."
+    help = _("Extract product data from a local UTF-8 HTML file without network requests.")
     requires_system_checks = []
     requires_migrations_checks = False
 
     def add_arguments(self, parser):
-        parser.add_argument("path", help="Путь к локальному HTML-файлу UTF-8, не более 2 МиБ.")
+        parser.add_argument("path", help=_("Path to a local UTF-8 HTML file, no larger than 2 MiB."))
         for field in ("title", "price", "currency", "availability"):
-            parser.add_argument(f"--{field}-selector", help=f"CSS-селектор поля {field}.")
+            parser.add_argument(f"--{field}-selector", help=_("CSS selector for %(field)s.") % {"field": field})
             parser.add_argument(
-                f"--{field}-attribute", help=f"HTML-атрибут поля {field}; по умолчанию — текст."
+                f"--{field}-attribute", help=_("HTML attribute for %(field)s; defaults to element text.") % {"field": field}
             )
-        parser.add_argument("--currency", dest="currency_hint", help="Явная валюта, например RUB.")
+        parser.add_argument("--currency", dest="currency_hint", help=_("Explicit currency, for example RUB."))
 
     def handle(self, *args, **options):
         html = _read_local_html(options["path"])

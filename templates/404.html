@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Страница не найдена — PriceWatch{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "Page not found — PriceWatch" %}{% endblock %}
 {% block content %}
   <div class="container page-container error-layout">
     <section class="error-card" aria-labelledby="error-title">
-      <p class="eyebrow">Ошибка 404</p>
-      <h1 id="error-title">Страница не найдена</h1>
-      <p>Возможно, адрес изменился или в нём есть опечатка.</p>
-      <a class="btn btn-primary" href="{% url 'core:dashboard' %}">Перейти в кабинет</a>
+      <p class="eyebrow">{% translate "Error 404" %}</p>
+      <h1 id="error-title">{% translate "Page not found" %}</h1>
+      <p>{% translate "The address may have changed or contain a typo." %}</p>
+      <a class="btn btn-primary" href="{% url 'core:dashboard' %}">{% translate "Go to dashboard" %}</a>
     </section>
   </div>
 {% endblock %}

@@ -3,8 +3,20 @@
 from decimal import Decimal, localcontext
 
 from django import template
+from django.utils import formats
+from django.utils.translation import gettext, gettext_noop
 
 register = template.Library()
+
+
+@register.filter
+def translated_diagnostic(value):
+    """Translate known system diagnostics without rewriting stored history."""
+    diagnostics = {
+        "availability_unknown": gettext_noop("Availability could not be determined."),
+        "price_unavailable_out_of_stock": gettext_noop("The product is out of stock and has no price."),
+    }
+    return gettext(diagnostics.get(str(value), str(value)))
 
 
 @register.simple_tag(takes_context=True)
@@ -35,6 +47,6 @@ def amount(value):
     while integer:
         groups.append(integer[-3:])
         integer = integer[:-3]
-    result = "\N{NO-BREAK SPACE}".join(reversed(groups))
+    result = formats.get_format("THOUSAND_SEPARATOR").join(reversed(groups))
     fraction = fraction.rstrip("0")
-    return sign + result + ("," + fraction if fraction else "")
+    return sign + result + (formats.get_format("DECIMAL_SEPARATOR") + fraction if fraction else "")

@@ -4,6 +4,7 @@ from datetime import date
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from .checks import validate_monitor_input, validate_notification_settings
 from .models import Monitor
@@ -11,28 +12,28 @@ from .scraping.normalization import SUPPORTED_CURRENCIES
 
 
 class MonitorForm(forms.Form):
-    notification_mode = forms.ChoiceField(label="Уведомления о цене", choices=Monitor.NotificationMode.choices, required=False, initial="off")
-    notification_threshold = forms.DecimalField(label="Порог цены", required=False, max_digits=30, decimal_places=10, min_value=0)
-    notification_currency = forms.ChoiceField(label="Валюта порога", required=False, choices=[("", "Выберите валюту"), *((code, code) for code in sorted(SUPPORTED_CURRENCIES))])
-    name = forms.CharField(label="Название мониторинга", max_length=200)
+    notification_mode = forms.ChoiceField(label=_("Price notifications"), choices=Monitor.NotificationMode.choices, required=False, initial="off")
+    notification_threshold = forms.DecimalField(label=_("Price threshold"), required=False, max_digits=30, decimal_places=10, min_value=0)
+    notification_currency = forms.ChoiceField(label=_("Threshold currency"), required=False, choices=[("", _("Select a currency")), *((code, code) for code in sorted(SUPPORTED_CURRENCIES))])
+    name = forms.CharField(label=_("Monitor name"), max_length=200)
     url = forms.CharField(
-        label="URL товара", max_length=2048,
-        help_text="HTTP(S)-адрес на разрешённом сайте. Сохранение не запускает проверку.",
+        label=_("Product URL"), max_length=2048,
+        help_text=_("An HTTP(S) URL on an allowed site. Saving does not start a check."),
         widget=forms.URLInput(attrs={"placeholder": "https://shop.example/product"}),
     )
-    title_selector = forms.CharField(label="Название товара", max_length=500, required=False)
-    price_selector = forms.CharField(label="Цена", max_length=500, required=False)
-    currency_selector = forms.CharField(label="Валюта", max_length=500, required=False)
-    availability_selector = forms.CharField(label="Наличие", max_length=500, required=False)
+    title_selector = forms.CharField(label=_("Product title"), max_length=500, required=False)
+    price_selector = forms.CharField(label=_("Price"), max_length=500, required=False)
+    currency_selector = forms.CharField(label=_("Currency"), max_length=500, required=False)
+    availability_selector = forms.CharField(label=_("Availability"), max_length=500, required=False)
     currency_hint = forms.ChoiceField(
-        label="Явная валюта", required=False,
-        choices=[("", "Определить по странице")] + [(code, code) for code in sorted(SUPPORTED_CURRENCIES)],
-        help_text="Нужна, например, для неоднозначного символа $. Не пересчитывает цену.",
+        label=_("Explicit currency"), required=False,
+        choices=[("", _("Detect from page"))] + [(code, code) for code in sorted(SUPPORTED_CURRENCIES)],
+        help_text=_("Useful for ambiguous symbols such as $. Does not convert prices."),
     )
-    title_attribute = forms.CharField(label="Атрибут названия", max_length=100, required=False)
-    price_attribute = forms.CharField(label="Атрибут цены", max_length=100, required=False)
-    currency_attribute = forms.CharField(label="Атрибут валюты", max_length=100, required=False)
-    availability_attribute = forms.CharField(label="Атрибут наличия", max_length=100, required=False)
+    title_attribute = forms.CharField(label=_("Title attribute"), max_length=100, required=False)
+    price_attribute = forms.CharField(label=_("Price attribute"), max_length=100, required=False)
+    currency_attribute = forms.CharField(label=_("Currency attribute"), max_length=100, required=False)
+    availability_attribute = forms.CharField(label=_("Availability attribute"), max_length=100, required=False)
 
     config_fields = (
         "title_selector", "price_selector", "currency_selector", "availability_selector",
@@ -54,9 +55,9 @@ class MonitorForm(forms.Form):
             field.widget.attrs["aria-describedby"] = f"id_{name}_help"
         self.fields["name"].widget.attrs["autofocus"] = True
         for field_name in ("title_selector", "price_selector", "currency_selector", "availability_selector"):
-            self.fields[field_name].widget.attrs["placeholder"] = ".product-price" if field_name == "price_selector" else "CSS-селектор"
+            self.fields[field_name].widget.attrs["placeholder"] = ".product-price" if field_name == "price_selector" else _("CSS selector")
         for field_name in ("title_attribute", "price_attribute", "currency_attribute", "availability_attribute"):
-            self.fields[field_name].widget.attrs["placeholder"] = "Текст элемента (по умолчанию)"
+            self.fields[field_name].widget.attrs["placeholder"] = _("Element text (default)")
 
     def clean(self):
         cleaned = super().clean()
@@ -90,11 +91,11 @@ class MonitorForm(forms.Form):
 
 class ScheduleForm(forms.Form):
     auto_enabled = forms.BooleanField(
-        label="Автоматические проверки", required=False,
+        label=_("Automatic checks"), required=False,
         widget=forms.CheckboxInput(attrs={"class": "form-check-input", "role": "switch"}),
     )
     check_interval_hours = forms.TypedChoiceField(
-        label="Интервал проверки", choices=Monitor.Interval.choices, coerce=int,
+        label=_("Check interval"), choices=Monitor.Interval.choices, coerce=int,
         widget=forms.Select(attrs={"class": "form-select"}),
     )
 
@@ -107,14 +108,14 @@ class ScheduleForm(forms.Form):
 
 
 class HistoryFilterForm(forms.Form):
-    period = forms.ChoiceField(label="Период", choices=[("7", "7 дней"), ("30", "30 дней"), ("90", "90 дней"), ("all", "Всё время")])
-    date_from = forms.DateField(label="С даты", required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), input_formats=["%Y-%m-%d"])
-    date_to = forms.DateField(label="По дату", required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), input_formats=["%Y-%m-%d"])
-    currency = forms.ChoiceField(label="Валюта", required=False)
+    period = forms.ChoiceField(label=_("Period"), choices=[("7", _("7 days")), ("30", _("30 days")), ("90", _("90 days")), ("all", _("All time"))])
+    date_from = forms.DateField(label=_("From date"), required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), input_formats=["%Y-%m-%d"])
+    date_to = forms.DateField(label=_("To date"), required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), input_formats=["%Y-%m-%d"])
+    currency = forms.ChoiceField(label=_("Currency"), required=False)
 
     def __init__(self, *args, currencies=(), allow_all_currencies=False, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["currency"].choices = [("", "Все валюты" if allow_all_currencies else "Выберите валюту"), *((value, value) for value in currencies)]
+        self.fields["currency"].choices = [("", _("All currencies") if allow_all_currencies else _("Select a currency")), *((value, value) for value in currencies)]
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-select" if isinstance(field.widget, forms.Select) else "form-control"
 
@@ -122,8 +123,8 @@ class HistoryFilterForm(forms.Form):
         data = super().clean()
         start, end = data.get("date_from"), data.get("date_to")
         if end == date.max:
-            self.add_error("date_to", "Выберите дату до 31.12.9999.")
+            self.add_error("date_to", _("Choose a date before 9999-12-31."))
         if start and end and start > end:
-            self.add_error("date_to", "Конец периода должен быть не раньше начала.")
+            self.add_error("date_to", _("The end date must not precede the start date."))
         return data
 

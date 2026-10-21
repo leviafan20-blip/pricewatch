@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_noop
 
 from .checks import (
     ACTIVE_STATUSES, DELIVERY_RETRY_SECONDS, EXECUTION_LIMIT_ERROR,
@@ -32,9 +33,9 @@ def configure_schedule(monitor_id, *, user, enabled, interval_hours, now=None):
     with transaction.atomic():
         monitor = Monitor.objects.select_for_update().get(pk=monitor_id, owner=user, archived_at__isnull=True)
         if not isinstance(enabled, bool):
-            raise ValidationError("Некорректное состояние расписания.")
+            raise ValidationError(gettext("Invalid schedule state."))
         if isinstance(interval_hours, bool) or not isinstance(interval_hours, int) or interval_hours not in Monitor.Interval.values:
-            raise ValidationError("Выберите интервал: 1, 3, 6, 12 или 24 часа.")
+            raise ValidationError(gettext("Choose an interval: 1, 3, 6, 12 or 24 hours."))
         was_enabled = monitor.auto_enabled
         interval_changed = monitor.check_interval_hours != interval_hours
         monitor.auto_enabled = enabled
@@ -116,7 +117,7 @@ def dispatch_due_checks(*, publish, now=None, batch_size=DISPATCH_BATCH_SIZE):
                     run.claim_token = None
                     run.next_delivery_at = None
                     run.error_code = "queue_delivery_timeout"
-                    run.error_message = "Не удалось подтвердить выполнение задания после повторных отправок."
+                    run.error_message = gettext_noop("Не удалось подтвердить выполнение задания после повторных отправок.")
                     if run.execution_attempts >= MAX_EXECUTION_ATTEMPTS:
                         run.error_code, run.error_message = EXECUTION_LIMIT_ERROR
                     run.save(update_fields=["status", "finished_at", "claim_token", "next_delivery_at", "error_code", "error_message"])

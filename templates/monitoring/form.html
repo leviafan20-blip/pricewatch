@@ -1,24 +1,25 @@
 {% extends 'base.html' %}
-{% block title %}{% if editing %}Настройки{% else %}Добавить товар{% endif %} — PriceWatch{% endblock %}
+{% load i18n %}
+{% block title %}{% if editing %}{% translate "Settings" %}{% else %}{% translate "Add product" %}{% endif %} — PriceWatch{% endblock %}
 {% block content %}
 <div class="container page-container dashboard-layout">
-  <a class="back-link" href="{% if editing %}{% url 'monitoring:detail' monitor.pk %}{% else %}{% url 'monitoring:list' %}{% endif %}">← {% if editing %}К товару{% else %}К мониторингам{% endif %}</a>
-  <div class="dashboard-heading"><div><p class="eyebrow">{% if editing %}Настройки мониторинга{% else %}Новый мониторинг{% endif %}</p><h1>{% if editing %}Редактировать товар{% else %}Добавить товар{% endif %}</h1><p class="page-description">Сначала сохраните настройки. Проверку можно запустить со страницы товара.</p></div></div>
+  <a class="back-link" href="{% if editing %}{% url 'monitoring:detail' monitor.pk %}{% else %}{% url 'monitoring:list' %}{% endif %}">← {% if editing %}{% translate "Back to product" %}{% else %}{% translate "Back to monitors" %}{% endif %}</a>
+  <div class="dashboard-heading"><div><p class="eyebrow">{% if editing %}{% translate "Monitor settings" %}{% else %}{% translate "New monitor" %}{% endif %}</p><h1>{% if editing %}{% translate "Edit product" %}{% else %}{% translate "Add product" %}{% endif %}</h1><p class="page-description">{% translate "Save the settings first. You can start a check from the product page." %}</p></div></div>
   <form method="post" class="workspace-card monitor-form" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
     {% include 'monitoring/_field.html' with field=form.name %}
     {% include 'monitoring/_field.html' with field=form.url %}
-    <div class="allowlist-note">{% if allowed_hosts %}<strong>Разрешённые сайты:</strong> {{ allowed_hosts|join:', ' }}. Поддомены разрешаются отдельно.{% else %}<strong>Список сайтов пока не настроен.</strong> Для сетевых проверок администратор должен указать разрешённые домены.{% endif %}</div>
-    <fieldset class="notification-options"><legend>Уведомления о цене</legend>
+    <div class="allowlist-note">{% if allowed_hosts %}<strong>{% translate "Allowed sites:" %}</strong> {% blocktranslate with v0=allowed_hosts|join:', ' %}{{ v0 }}. Subdomains must be allowed separately.{% endblocktranslate %}{% else %}<strong>{% translate "The site allowlist is not configured yet." %}</strong> {% translate "The administrator must configure allowed domains before network checks can run." %}{% endif %}</div>
+    <fieldset class="notification-options"><legend>{% translate "Price notifications" %}</legend>
       {% include 'monitoring/_field.html' with field=form.notification_mode %}
       <div class="selector-grid">{% include 'monitoring/_field.html' with field=form.notification_threshold %}{% include 'monitoring/_field.html' with field=form.notification_currency %}</div>
-      <p class="form-text">Порог используется только в режиме пересечения: предыдущая цена ≥ порога, новая &lt; порога, валюта совпадает. Первое получение цены и смена валюты/URL не создают уведомление. По умолчанию уведомления выключены.</p>
-      <p class="form-text">Внутренние уведомления доступны в кабинете. <a href="{% url 'notifications:settings' %}">Email настраивается отдельно для аккаунта</a>.</p>
+      <p class="form-text">{% translate "The threshold applies only when crossed: previous price ≥ threshold, new price &lt; threshold, in the same currency. The first price and currency/URL changes do not create notifications. Notifications are off by default." %}</p>
+      <p class="form-text">{% translate "In-app notifications are available in your workspace." %} <a href="{% url 'notifications:settings' %}">{% translate "Email is configured separately for your account" %}</a>.</p>
     </fieldset>
     <details class="selector-settings" {% if form.errors %}open{% endif %}>
-      <summary>Настройки извлечения <span>CSS-селекторы и валюта</span></summary>
-      <p class="form-text mt-3">Оставьте поля пустыми для JSON-LD и метаданных. Селектор должен выбирать один элемент. При ручном выборе цены её валюта определяется из выбранного текста или явной настройки.</p>
+      <summary>{% translate "Extraction settings" %} <span>{% translate "CSS selectors and currency" %}</span></summary>
+      <p class="form-text mt-3">{% translate "Leave fields empty to use JSON-LD and metadata. A selector must match one element. For a manually selected price, the currency comes from the selected text or an explicit setting." %}</p>
       <div class="selector-grid">
         {% include 'monitoring/_field.html' with field=form.title_selector %}
         {% include 'monitoring/_field.html' with field=form.title_attribute %}
@@ -31,8 +32,8 @@
       </div>
       {% include 'monitoring/_field.html' with field=form.currency_hint %}
     </details>
-    {% if editing %}<p class="form-text">Уже поставленная в очередь проверка использует сохранённые при запуске настройки. Изменения применятся к следующей проверке.</p>{% endif %}
-    <div class="form-actions"><button class="btn btn-primary" type="submit">{% if editing %}Сохранить изменения{% else %}Создать мониторинг{% endif %}</button><a class="btn btn-outline-secondary" href="{% if editing %}{% url 'monitoring:detail' monitor.pk %}{% else %}{% url 'monitoring:list' %}{% endif %}">Отмена</a></div>
+    {% if editing %}<p class="form-text">{% translate "A queued check uses the settings captured when it was requested. Changes apply to the next check." %}</p>{% endif %}
+    <div class="form-actions"><button class="btn btn-primary" type="submit">{% if editing %}{% translate "Save changes" %}{% else %}{% translate "Create monitor" %}{% endif %}</button><a class="btn btn-outline-secondary" href="{% if editing %}{% url 'monitoring:detail' monitor.pk %}{% else %}{% url 'monitoring:list' %}{% endif %}">{% translate "Cancel" %}</a></div>
   </form>
 </div>
 {% endblock %}

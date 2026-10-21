@@ -12,6 +12,7 @@ import zlib
 
 from django.utils import timezone
 from django.db import DatabaseError
+from django.utils.translation import gettext_noop
 import httpx
 
 from .errors import ScrapingError
@@ -64,7 +65,7 @@ class FetchedPage:
 def _remaining(deadline):
     remaining = deadline - time.monotonic()
     if remaining <= 0:
-        raise ScrapingError("timeout", "Превышено общее время загрузки страницы.")
+        raise ScrapingError("timeout", gettext_noop("Превышено общее время загрузки страницы."))
     return remaining
 
 
@@ -82,19 +83,19 @@ def _decode(body, content_type, *, robots_file=False):
         codecs.lookup(encoding)
         return body.decode(encoding, errors="strict")
     except (LookupError, UnicodeError):
-        raise ScrapingError("invalid_encoding", "Не удалось декодировать страницу в заявленной кодировке.") from None
+        raise ScrapingError("invalid_encoding", gettext_noop("Не удалось декодировать страницу в заявленной кодировке.")) from None
 
 
 def _read_body(response, limit, deadline):
     length = response.headers.get("content-length")
     if length is not None:
         if not length.isascii() or not length.isdigit() or len(length) > 12:
-            raise ScrapingError("invalid_response", "Некорректный Content-Length.")
+            raise ScrapingError("invalid_response", gettext_noop("Некорректный Content-Length."))
         if int(length) > limit:
-            raise ScrapingError("response_too_large", "Ответ сайта превышает ограничение размера.")
+            raise ScrapingError("response_too_large", gettext_noop("Ответ сайта превышает ограничение размера."))
     encoding = response.headers.get("content-encoding", "identity").lower().strip()
     if encoding not in {"identity", "gzip", "deflate"}:
-        raise ScrapingError("unsupported_encoding", "Неподдерживаемое сжатие ответа.")
+        raise ScrapingError("unsupported_encoding", gettext_noop("Неподдерживаемое сжатие ответа."))
     decompressor = None
     if encoding != "identity":
         decompressor = zlib.decompressobj(16 + zlib.MAX_WBITS if encoding == "gzip" else zlib.MAX_WBITS)
@@ -104,19 +105,19 @@ def _read_body(response, limit, deadline):
             _remaining(deadline)
             wire_size += len(chunk)
             if wire_size > limit:
-                raise ScrapingError("response_too_large", "Ответ сайта превышает ограничение размера.")
+                raise ScrapingError("response_too_large", gettext_noop("Ответ сайта превышает ограничение размера."))
             if decompressor is not None:
                 # max_length bounds transient memory too; iter_bytes() would decode unbounded chunks.
                 chunk = decompressor.decompress(chunk, limit - len(output) + 1)
                 if decompressor.unused_data:
-                    raise ScrapingError("invalid_response", "Несколько сжатых потоков не поддерживаются.")
+                    raise ScrapingError("invalid_response", gettext_noop("Несколько сжатых потоков не поддерживаются."))
             output.extend(chunk)
             if len(output) > limit or (decompressor is not None and decompressor.unconsumed_tail):
-                raise ScrapingError("response_too_large", "Распакованный ответ превышает ограничение размера.")
+                raise ScrapingError("response_too_large", gettext_noop("Распакованный ответ превышает ограничение размера."))
         if decompressor is not None and not decompressor.eof:
-            raise ScrapingError("invalid_response", "Сжатый ответ оборван.")
+            raise ScrapingError("invalid_response", gettext_noop("Сжатый ответ оборван."))
     except zlib.error:
-        raise ScrapingError("invalid_response", "Некорректный сжатый ответ сайта.") from None
+        raise ScrapingError("invalid_response", gettext_noop("Некорректный сжатый ответ сайта.")) from None
     _remaining(deadline)
     return bytes(output)
 
@@ -166,9 +167,9 @@ class PageLoader:
         try:
             final, status, headers, body = self._walk(url, deadline, robots_file=False)
         except DatabaseError:
-            raise ScrapingError("rate_limit_unavailable", "Не удалось проверить общий лимит запросов; загрузка остановлена.") from None
+            raise ScrapingError("rate_limit_unavailable", gettext_noop("Не удалось проверить общий лимит запросов; загрузка остановлена.")) from None
         if status != 200:
-            raise ScrapingError("http_error", "Сайт не вернул доступную страницу.", details={"status_code": status})
+            raise ScrapingError("http_error", gettext_noop("Сайт не вернул доступную страницу."), details={"status_code": status})
         return FetchedPage(final.url, _decode(body, headers.get("content-type", "")), status, len(body))
 
     def _robots(self, target, deadline):
@@ -185,22 +186,22 @@ class PageLoader:
                     text = _decode(body, "", robots_file=True)
                     noncomments = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
                     if re.search(r"<(?:!doctype\b|/?(?:html|head|body|script)\b|!--)", noncomments, re.I):
-                        raise ScrapingError("robots_unavailable", "Вместо robots.txt получена HTML-страница.")
+                        raise ScrapingError("robots_unavailable", gettext_noop("Вместо robots.txt получена HTML-страница."))
                     rules = robots.parse_robots(text, self.policy.user_agent)
                 else:
-                    raise ScrapingError("robots_unavailable", "Правила robots.txt временно недоступны.")
+                    raise ScrapingError("robots_unavailable", gettext_noop("Правила robots.txt временно недоступны."))
                 # The just-completed robots request must obey the newly learned delay too.
                 if rules.crawl_delay and hasattr(self.limiter, "defer"):
                     self.limiter.defer(target.host, rules.crawl_delay)
                 robots.cache_rules(key, rules, _robots_ttl(headers, self.policy.robots_ttl))
             except ScrapingError as error:
-                failure = ScrapingError("robots_unavailable", "Не удалось безопасно получить robots.txt.", details={"reason": error.code})
+                failure = ScrapingError("robots_unavailable", gettext_noop("Не удалось безопасно получить robots.txt."), details={"reason": error.code})
                 robots.cache_rules(key, failure, min(60, self.policy.robots_ttl))
                 raise failure from None
         if isinstance(rules, ScrapingError):
             raise ScrapingError(rules.code, rules.message, details=rules.details.copy())
         if not rules.can_fetch(target.url):
-            raise ScrapingError("robots_denied", "robots.txt запрещает проверку этой страницы.")
+            raise ScrapingError("robots_denied", gettext_noop("robots.txt запрещает проверку этой страницы."))
         return rules
 
     def _walk(self, url, deadline, *, robots_file):
@@ -208,7 +209,7 @@ class PageLoader:
         for hop in range(self.policy.max_redirects + 1):
             target = validate_url(url, self.policy.allowed_hosts)
             if target.url in seen:
-                raise ScrapingError("redirect_limit", "Обнаружен цикл перенаправлений.")
+                raise ScrapingError("redirect_limit", gettext_noop("Обнаружен цикл перенаправлений."))
             seen.add(target.url)
             rules = None if robots_file else self._robots(target, deadline)
             interval = max(self.policy.min_interval, rules.crawl_delay if rules else 0)
@@ -229,20 +230,20 @@ class PageLoader:
             status, headers, body = result
             if status in {301, 302, 303, 307, 308}:
                 if hop >= self.policy.max_redirects:
-                    raise ScrapingError("redirect_limit", "Превышен предел перенаправлений.")
+                    raise ScrapingError("redirect_limit", gettext_noop("Превышен предел перенаправлений."))
                 location = headers.get("location")
                 if not location:
-                    raise ScrapingError("invalid_redirect", "Перенаправление не содержит Location.")
+                    raise ScrapingError("invalid_redirect", gettext_noop("Перенаправление не содержит Location."))
                 try:
                     url = urljoin(target.url, location)
                 except ValueError:
-                    raise ScrapingError("invalid_redirect", "Сайт вернул некорректный адрес перенаправления.") from None
+                    raise ScrapingError("invalid_redirect", gettext_noop("Сайт вернул некорректный адрес перенаправления.")) from None
                 destination = validate_url(url, self.policy.allowed_hosts)
                 if target.scheme == "https" and destination.scheme != "https":
-                    raise ScrapingError("unsafe_redirect", "Переход с HTTPS на HTTP запрещён.")
+                    raise ScrapingError("unsafe_redirect", gettext_noop("Переход с HTTPS на HTTP запрещён."))
                 continue
             return target, status, headers, body
-        raise ScrapingError("redirect_limit", "Превышен предел перенаправлений.")
+        raise ScrapingError("redirect_limit", gettext_noop("Превышен предел перенаправлений."))
 
     def _send(self, target, ip, deadline, robots_file):
         remaining = _remaining(deadline)
@@ -268,11 +269,11 @@ class PageLoader:
                 media_type = headers.get("content-type", "").split(";", 1)[0].strip().lower()
                 allowed_types = {"", "text/plain", "text/x-robots-txt"} if robots_file else {"text/html", "application/xhtml+xml"}
                 if media_type not in allowed_types:
-                    raise ScrapingError("unsupported_content_type", "Сайт вернул неподдерживаемый тип содержимого.")
+                    raise ScrapingError("unsupported_content_type", gettext_noop("Сайт вернул неподдерживаемый тип содержимого."))
                 limit = self.policy.robots_max_bytes if robots_file else self.policy.max_bytes
                 body = _read_body(response, limit, deadline)
                 return status, headers, body
         except httpx.TimeoutException:
-            raise ScrapingError("timeout", "Сайт не ответил за отведённое время.") from None
+            raise ScrapingError("timeout", gettext_noop("Сайт не ответил за отведённое время.")) from None
         except httpx.RequestError:
-            raise ScrapingError("network_error", "Ошибка соединения с сайтом или проверки TLS.") from None
+            raise ScrapingError("network_error", gettext_noop("Ошибка соединения с сайтом или проверки TLS.")) from None

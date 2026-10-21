@@ -5,6 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gettext \
+    && rm -rf /var/lib/apt/lists/*
 COPY requirements/ /app/requirements/
 RUN python -m pip install --no-cache-dir -r requirements/dev.txt \
     && groupadd --system pricewatch \
@@ -14,6 +17,7 @@ COPY --chown=pricewatch:pricewatch . /app/
 RUN chown pricewatch:pricewatch /app \
     && install -d -o pricewatch -g pricewatch /var/lib/pricewatch/beat
 USER pricewatch
+RUN DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages
 
 EXPOSE 8000
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

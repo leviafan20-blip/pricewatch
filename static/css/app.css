@@ -298,3 +298,7 @@ a:hover { color: var(--pw-ink); }
   .monitor-bottom-actions { flex-direction: column; gap: 10px; }
   .selector-settings summary span { display: block; margin: 6px 0 0 18px; }
 }
+
+/* Available to signed-in users and on the login page. */
+.language-switcher { margin: 0 0 0 auto; flex-shrink: 0; }
+.header-inner { flex-wrap: wrap; gap: 1rem; }

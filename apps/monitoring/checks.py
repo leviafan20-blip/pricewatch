@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection, transaction
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_noop
 import soupsieve
 
 from . import services
@@ -28,7 +29,7 @@ MAX_DELIVERY_ATTEMPTS = 3
 MAX_EXECUTION_ATTEMPTS = 3
 EXECUTION_LIMIT_ERROR = (
     "execution_attempts_exhausted",
-    "Проверка прервана после трёх запусков. Повторите проверку позднее.",
+    gettext_noop("Проверка прервана после трёх запусков. Повторите проверку позднее."),
 )
 
 
@@ -41,7 +42,7 @@ class CheckRequest:
 
 class CheckQueueError(Exception):
     code = "queue_unavailable"
-    message = "Не удалось отправить проверку в очередь. Повторите попытку позднее."
+    message = gettext_noop("Не удалось отправить проверку в очередь. Повторите попытку позднее.")
 
     def __init__(self, run):
         super().__init__(self.message)
@@ -52,28 +53,28 @@ def validate_monitor_input(*, name, url, extraction_config=None):
     """Validate form/service inputs without DNS or HTTP in the web process."""
     errors = {}
     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 200:
-        errors["name"] = "Укажите название до 200 символов."
+        errors["name"] = gettext("Enter a name of at most 200 characters.")
     try:
         normalized_url = validate_url(url.strip() if isinstance(url, str) else url, settings.SCRAPING_ALLOWED_HOSTS).url
     except ScrapingError as error:
-        errors["url"] = error.message
+        errors["url"] = gettext(error.message)
         normalized_url = None
     config = extraction_config if extraction_config is not None else {}
     normalized = {}
     if not isinstance(config, dict) or set(config) - {field.name for field in fields(ExtractionConfig)}:
-        errors["extraction_config"] = "Неизвестные настройки извлечения."
+        errors["extraction_config"] = gettext("Unknown extraction settings.")
     else:
         for key, value in config.items():
             if key.endswith("_values"):
                 if not isinstance(value, (list, tuple)) or len(value) > 50 or any(not isinstance(item, str) or not item.strip() or len(item) > 200 for item in value):
-                    errors["extraction_config"] = "Значения наличия должны быть списком непустых строк."
+                    errors["extraction_config"] = gettext("Availability values must be lists of nonempty strings.")
                 else:
                     normalized[key] = list(value)
                 continue
             if value is None or value == "":
                 continue
             if not isinstance(value, str):
-                errors["extraction_config"] = "Селекторы, атрибуты и валюта должны быть строками."
+                errors["extraction_config"] = gettext("Selectors, attributes and currency must be strings.")
                 continue
             value = value.strip()
             try:
@@ -88,10 +89,10 @@ def validate_monitor_input(*, name, url, extraction_config=None):
                     value = normalize_currency(value)
                 normalized[key] = value
             except (ValueError, soupsieve.SelectorSyntaxError, ScrapingError):
-                errors["extraction_config"] = "Проверьте CSS-селекторы, атрибуты и код валюты."
+                errors["extraction_config"] = gettext("Check the CSS selectors, attributes and currency code.")
         for key in normalized:
             if key.endswith("_attribute") and not normalized.get(key.replace("_attribute", "_selector")):
-                errors["extraction_config"] = "Для чтения атрибута укажите CSS-селектор этого поля."
+                errors["extraction_config"] = gettext("Provide the field's CSS selector to read an attribute.")
     if errors:
         raise ValidationError(errors)
     return {"name": name.strip(), "url": normalized_url, "extraction_config": normalized}
@@ -99,7 +100,7 @@ def validate_monitor_input(*, name, url, extraction_config=None):
 
 def validate_notification_settings(*, notification_mode="off", notification_threshold=None, notification_currency=""):
     if notification_mode not in Monitor.NotificationMode.values:
-        raise ValidationError({"notification_mode": "Выберите режим уведомлений."})
+        raise ValidationError({"notification_mode": gettext("Select a notification mode.")})
     if notification_mode != "threshold":
         return {"notification_mode": notification_mode, "notification_threshold": None, "notification_currency": ""}
     try:
@@ -107,13 +108,13 @@ def validate_notification_settings(*, notification_mode="off", notification_thre
             raise ValidationError("Use Decimal for money")
         threshold = Monitor._meta.get_field("notification_threshold").clean(notification_threshold, None)
         if threshold is None or threshold < 0:
-            raise ValidationError("Укажите неотрицательную денежную сумму.")
+            raise ValidationError(gettext("Enter a nonnegative monetary amount."))
     except (ValidationError, TypeError):
-        raise ValidationError({"notification_threshold": "Укажите неотрицательный порог: до 20 целых и 10 дробных знаков."}) from None
+        raise ValidationError({"notification_threshold": gettext("Enter a nonnegative threshold with up to 20 integer and 10 decimal digits.")}) from None
     try:
         currency = normalize_currency(notification_currency)
     except ScrapingError:
-        raise ValidationError({"notification_currency": "Укажите валюту порога."}) from None
+        raise ValidationError({"notification_currency": gettext("Specify the threshold currency.")}) from None
     return {"notification_mode": notification_mode, "notification_threshold": threshold, "notification_currency": currency}
 
 
@@ -318,10 +319,10 @@ def execute_check(run_id):
             return _finish_run(run.pk, run.monitor_id, token, product=product)
         except ScrapingError as error:
             code = error.code if re.fullmatch(r"[a-z][a-z0-9_]{0,63}", error.code) else "inspection_error"
-            failure = (code, error.message[:500] or "Не удалось проверить страницу товара.")
+            failure = (code, error.message[:500] or gettext_noop("Не удалось проверить страницу товара."))
         except Exception as error:
             code = "worker_timeout" if type(error).__name__ == "SoftTimeLimitExceeded" else "internal_error"
-            failure = (code, "Проверка прервана по времени." if code == "worker_timeout" else "Внутренняя ошибка проверки. Повторите попытку позднее.")
+            failure = (code, gettext_noop("Проверка прервана по времени.") if code == "worker_timeout" else gettext_noop("Внутренняя ошибка проверки. Повторите попытку позднее."))
             # Exception text, URL, HTML and traceback can contain page secrets.
             logger.error("Check execution failed: %s", code)
         return _finish_run(run.pk, run.monitor_id, token, error=failure)

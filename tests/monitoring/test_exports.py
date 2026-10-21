@@ -246,7 +246,7 @@ def test_row_limit_does_not_silently_truncate(owner_client, monitor, monkeypatch
     add_observations(monitor, ["2"])
     response = download(owner_client, monitor, format=file_format)
     assert response.status_code == 400
-    assert "Уменьшите период" in str(response.context["history_form"].non_field_errors())
+    assert "Choose a shorter period" in str(response.context["history_form"].non_field_errors())
 
 
 def test_large_export_is_not_chart_sampled_and_has_no_n_plus_one(monitor):

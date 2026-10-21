@@ -4,6 +4,8 @@ Each request owns its pool: no reused connection can escape a fresh DNS decision
 Host and TLS SNI stay the original hostname; TCP sees only the validated IP.
 """
 
+from django.utils.translation import gettext_noop
+
 from contextlib import contextmanager
 import ssl
 import time
@@ -64,7 +66,7 @@ class DeadlineBackend(httpcore.NetworkBackend):
 
     def connect_tcp(self, host, port, timeout=None, local_address=None, socket_options=None):
         if host != self.pinned_ip or not is_public_ip(host):
-            raise ScrapingError("unsafe_address", "Соединение с непроверенным адресом запрещено.")
+            raise ScrapingError("unsafe_address", gettext_noop("Соединение с непроверенным адресом запрещено."))
         remaining = self.deadline - time.monotonic()
         if remaining <= 0:
             raise httpcore.ConnectTimeout("Total deadline exceeded")
@@ -101,7 +103,7 @@ class PinnedTransport(httpx.BaseTransport):
         ip = request.extensions.get("pinned_ip")
         deadline = request.extensions.get("deadline")
         if not isinstance(ip, str) or not is_public_ip(ip) or not isinstance(deadline, (int, float)):
-            raise ScrapingError("unsafe_address", "Запрос не содержит проверенный IP и срок выполнения.")
+            raise ScrapingError("unsafe_address", gettext_noop("Запрос не содержит проверенный IP и срок выполнения."))
         hostname = request.url.raw_host.decode("ascii")
         url = request.url.copy_with(host=ip)
         headers = httpx.Headers(request.headers)

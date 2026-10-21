@@ -7,6 +7,8 @@ from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
+from apps.monitoring.models import Monitor
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +16,9 @@ logger = logging.getLogger(__name__)
 @never_cache
 @require_GET
 def dashboard(request):
-    return render(request, "core/dashboard.html")
+    return render(request, "core/dashboard.html", {
+        "has_monitors": Monitor.objects.filter(owner=request.user).exists(),
+    })
 
 
 @never_cache

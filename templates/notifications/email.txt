@@ -1,14 +1,14 @@
-{% load monitoring %}{% autoescape off %}PriceWatch — изменение цены
+{% load i18n monitoring %}{% autoescape off %}{% translate "PriceWatch — price change" %}
 
 {{ monitor.name }}
-Старая цена: {{ notice.previous_observation.price|amount }} {{ notice.observation.currency }}
-Новая цена: {{ notice.observation.price|amount }} {{ notice.observation.currency }}
-Изменение: {% if notice.change > 0 %}+{% endif %}{{ notice.change|amount }} {{ notice.observation.currency }}
-Процент: {% if notice.percent != None %}{% if notice.percent > 0 %}+{% endif %}{{ notice.percent|percent_amount }} %{% else %}не определён — начальная цена равна нулю{% endif %}
-Дата: {{ notice.created_at|date:'d.m.Y H:i:s' }}
+{% translate "Previous price:" %} {{ notice.previous_observation.price|amount }} {{ notice.observation.currency }}
+{% translate "New price:" %} {{ notice.observation.price|amount }} {{ notice.observation.currency }}
+{% translate "Change:" %} {% if notice.change > 0 %}+{% endif %}{{ notice.change|amount }} {{ notice.observation.currency }}
+{% translate "Percentage:" %} {% if notice.percent != None %}{% if notice.percent > 0 %}+{% endif %}{{ notice.percent|percent_amount }} %{% else %}{% translate "undefined — the initial price is zero" %}{% endif %}
+{% translate "Date:" %} {{ notice.created_at|date:'DATETIME_FORMAT' }}
 
-Открыть мониторинг: {{ link }}
+{% translate "Open monitor:" %} {{ link }}
 
-Вы получили это сообщение, потому что включили email-уведомления в PriceWatch.
-Настройки email доступны в разделе «Уведомления» вашего кабинета.
+{% translate "You received this message because you enabled PriceWatch email notifications." %}
+{% translate "Email preferences are available in your workspace under Notifications." %}
 {% endautoescape %}

@@ -4,21 +4,25 @@
   const canvas = document.getElementById("price-chart");
   if (!canvas) return;
   const status = document.getElementById("chart-status");
+  const locale = document.documentElement.lang || "en";
   try {
     const payload = JSON.parse(document.getElementById("price-chart-data").textContent);
-    const dates = new Intl.DateTimeFormat("ru-RU", {timeZone: payload.timezone, dateStyle: "short", timeStyle: "medium"});
-    const days = new Intl.DateTimeFormat("ru-RU", {timeZone: payload.timezone, day: "2-digit", month: "short", year: "2-digit"});
+    const dates = new Intl.DateTimeFormat(locale, {timeZone: payload.timezone, dateStyle: "short", timeStyle: "medium"});
+    const days = new Intl.DateTimeFormat(locale, {timeZone: payload.timezone, day: "2-digit", month: "short", year: "2-digit"});
     const timestamps = payload.series.flatMap(series => series.points.map(point => Date.parse(point.at)));
     const earliest = Math.min(...timestamps);
     const latest = Math.max(...timestamps);
     const tickDates = latest - earliest < 172800000
-      ? new Intl.DateTimeFormat("ru-RU", {timeZone: payload.timezone, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit"})
+      ? new Intl.DateTimeFormat(locale, {timeZone: payload.timezone, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit"})
       : days;
     const colors = ["#168078", "#4365b5", "#c06c32", "#9255a4", "#65753d"];
+    const numberParts = new Intl.NumberFormat(locale).formatToParts(1234.5);
+    const group = numberParts.find(part => part.type === "group").value;
+    const decimal = numberParts.find(part => part.type === "decimal").value;
     const exactAmount = value => {
       const [integer, fraction = ""] = value.split(".");
       const tail = fraction.replace(/0+$/, "");
-      return integer.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (tail ? "," + tail : "");
+      return integer.replace(/\B(?=(\d{3})+(?!\d))/g, group) + (tail ? decimal + tail : "");
     };
     new Chart(canvas, {
       type: "line",
@@ -31,7 +35,7 @@
         pointHitRadius: 14, tension: 0, spanGaps: false, showLine: !series.sampled,
       }))},
       options: {
-        responsive: true, maintainAspectRatio: false, animation: false,
+        locale, responsive: true, maintainAspectRatio: false, animation: false,
         interaction: {mode: "nearest", intersect: false},
         scales: {
           x: {type: "linear", min: earliest === latest ? earliest - 3600000 : earliest,
@@ -50,7 +54,7 @@
     });
     canvas.dataset.rendered = "true";
   } catch (error) {
-    status.textContent = "График недоступен. Статистика и точные значения остаются доступны в таблице.";
+    status.textContent = canvas.dataset.errorMessage;
     console.error("PriceWatch chart could not be rendered", error);
   }
 })();

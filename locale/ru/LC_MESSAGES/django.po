@@ -1,0 +1,2022 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PriceWatch\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-21 21:51+0500\n"
+"PO-Revision-Date: 2026-10-21 00:00+0000\n"
+"Last-Translator: PriceWatch contributors\n"
+"Language-Team: ru\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: apps/accounts/apps.py:9
+msgid "Accounts"
+msgstr "Учётные записи"
+
+#: apps/accounts/models.py:10 templates/notifications/settings.html:5
+msgid "Email notifications"
+msgstr "Email-уведомления"
+
+#: apps/core/apps.py:9
+msgid "Application"
+msgstr "Приложение"
+
+#: apps/monitoring/apps.py:9
+msgid "Monitoring"
+msgstr "Мониторинг"
+
+#: apps/monitoring/checks.py:32
+msgid "Проверка прервана после трёх запусков. Повторите проверку позднее."
+msgstr "Проверка прервана после трёх запусков. Повторите проверку позднее."
+
+#: apps/monitoring/checks.py:45
+msgid "Не удалось отправить проверку в очередь. Повторите попытку позднее."
+msgstr "Не удалось отправить проверку в очередь. Повторите попытку позднее."
+
+#: apps/monitoring/checks.py:56
+msgid "Enter a name of at most 200 characters."
+msgstr "Укажите название до 200 символов."
+
+#: apps/monitoring/checks.py:65
+msgid "Unknown extraction settings."
+msgstr "Неизвестные настройки извлечения."
+
+#: apps/monitoring/checks.py:70
+msgid "Availability values must be lists of nonempty strings."
+msgstr "Значения наличия должны быть списком непустых строк."
+
+#: apps/monitoring/checks.py:77
+msgid "Selectors, attributes and currency must be strings."
+msgstr "Селекторы, атрибуты и валюта должны быть строками."
+
+#: apps/monitoring/checks.py:92
+msgid "Check the CSS selectors, attributes and currency code."
+msgstr "Проверьте CSS-селекторы, атрибуты и код валюты."
+
+#: apps/monitoring/checks.py:95
+msgid "Provide the field's CSS selector to read an attribute."
+msgstr "Для чтения атрибута укажите CSS-селектор этого поля."
+
+#: apps/monitoring/checks.py:103
+msgid "Select a notification mode."
+msgstr "Выберите режим уведомлений."
+
+#: apps/monitoring/checks.py:111
+msgid "Enter a nonnegative monetary amount."
+msgstr "Укажите неотрицательную денежную сумму."
+
+#: apps/monitoring/checks.py:113
+msgid ""
+"Enter a nonnegative threshold with up to 20 integer and 10 decimal digits."
+msgstr "Укажите неотрицательный порог: до 20 целых и 10 дробных знаков."
+
+#: apps/monitoring/checks.py:117
+msgid "Specify the threshold currency."
+msgstr "Укажите валюту порога."
+
+#: apps/monitoring/checks.py:322
+msgid "Не удалось проверить страницу товара."
+msgstr "Не удалось проверить страницу товара."
+
+#: apps/monitoring/checks.py:325
+msgid "Проверка прервана по времени."
+msgstr "Проверка прервана по времени."
+
+#: apps/monitoring/checks.py:325
+msgid "Внутренняя ошибка проверки. Повторите попытку позднее."
+msgstr "Внутренняя ошибка проверки. Повторите попытку позднее."
+
+#: apps/monitoring/forms.py:15 templates/monitoring/form.html:14
+msgid "Price notifications"
+msgstr "Уведомления о цене"
+
+#: apps/monitoring/forms.py:16
+msgid "Price threshold"
+msgstr "Порог цены"
+
+#: apps/monitoring/forms.py:17
+msgid "Threshold currency"
+msgstr "Валюта порога"
+
+#: apps/monitoring/forms.py:17 apps/monitoring/forms.py:118
+msgid "Select a currency"
+msgstr "Выберите валюту"
+
+#: apps/monitoring/forms.py:18
+msgid "Monitor name"
+msgstr "Название мониторинга"
+
+#: apps/monitoring/forms.py:20
+msgid "Product URL"
+msgstr "URL товара"
+
+#: apps/monitoring/forms.py:21
+msgid "An HTTP(S) URL on an allowed site. Saving does not start a check."
+msgstr "HTTP(S)-адрес на разрешённом сайте. Сохранение не запускает проверку."
+
+#: apps/monitoring/forms.py:24
+msgid "Product title"
+msgstr "Название товара"
+
+#: apps/monitoring/forms.py:25 templates/monitoring/detail.html:43
+msgid "Price"
+msgstr "Цена"
+
+#: apps/monitoring/forms.py:26 apps/monitoring/forms.py:114
+msgid "Currency"
+msgstr "Валюта"
+
+#: apps/monitoring/forms.py:27
+msgid "Availability"
+msgstr "Наличие"
+
+#: apps/monitoring/forms.py:29
+msgid "Explicit currency"
+msgstr "Явная валюта"
+
+#: apps/monitoring/forms.py:30
+msgid "Detect from page"
+msgstr "Определить по странице"
+
+#: apps/monitoring/forms.py:31
+msgid "Useful for ambiguous symbols such as $. Does not convert prices."
+msgstr "Нужна, например, для неоднозначного символа $. Не пересчитывает цену."
+
+#: apps/monitoring/forms.py:33
+msgid "Title attribute"
+msgstr "Атрибут названия"
+
+#: apps/monitoring/forms.py:34
+msgid "Price attribute"
+msgstr "Атрибут цены"
+
+#: apps/monitoring/forms.py:35
+msgid "Currency attribute"
+msgstr "Атрибут валюты"
+
+#: apps/monitoring/forms.py:36
+msgid "Availability attribute"
+msgstr "Атрибут наличия"
+
+#: apps/monitoring/forms.py:58
+msgid "CSS selector"
+msgstr "CSS-селектор"
+
+#: apps/monitoring/forms.py:60
+msgid "Element text (default)"
+msgstr "Текст элемента (по умолчанию)"
+
+#: apps/monitoring/forms.py:94
+msgid "Automatic checks"
+msgstr "Автоматические проверки"
+
+#: apps/monitoring/forms.py:98
+msgid "Check interval"
+msgstr "Интервал проверки"
+
+#: apps/monitoring/forms.py:111
+msgid "Period"
+msgstr "Период"
+
+#: apps/monitoring/forms.py:111
+msgid "7 days"
+msgstr "7 дней"
+
+#: apps/monitoring/forms.py:111
+msgid "30 days"
+msgstr "30 дней"
+
+#: apps/monitoring/forms.py:111
+msgid "90 days"
+msgstr "90 дней"
+
+#: apps/monitoring/forms.py:111
+msgid "All time"
+msgstr "Всё время"
+
+#: apps/monitoring/forms.py:112
+msgid "From date"
+msgstr "С даты"
+
+#: apps/monitoring/forms.py:113
+msgid "To date"
+msgstr "По дату"
+
+#: apps/monitoring/forms.py:118
+msgid "All currencies"
+msgstr "Все валюты"
+
+#: apps/monitoring/forms.py:126
+msgid "Choose a date before 9999-12-31."
+msgstr "Выберите дату до 31.12.9999."
+
+#: apps/monitoring/forms.py:128
+msgid "The end date must not precede the start date."
+msgstr "Конец периода должен быть не раньше начала."
+
+#: apps/monitoring/history.py:24
+msgid "Select one currency from the history; currencies are not converted."
+msgstr "Выберите одну валюту из истории; конвертация не выполняется."
+
+#: apps/monitoring/management/commands/parse_product.py:23
+msgid "file_required: Provide a local HTML file, not a URL or network path."
+msgstr "file_required: Укажите локальный HTML-файл, а не URL или сетевой путь."
+
+#: apps/monitoring/management/commands/parse_product.py:27
+msgid "file_required: Network paths are not supported."
+msgstr "file_required: Сетевые пути не поддерживаются."
+
+#: apps/monitoring/management/commands/parse_product.py:29
+msgid "file_required: Provide a regular local HTML file."
+msgstr "file_required: Укажите обычный локальный HTML-файл."
+
+#: apps/monitoring/management/commands/parse_product.py:33
+msgid "file_unreadable: Could not read the local HTML file."
+msgstr "file_unreadable: Не удалось прочитать локальный HTML-файл."
+
+#: apps/monitoring/management/commands/parse_product.py:35
+msgid "file_too_large: The HTML file exceeds 2 MiB."
+msgstr "file_too_large: Размер HTML-файла превышает 2 МиБ."
+
+#: apps/monitoring/management/commands/parse_product.py:39
+msgid "file_encoding: The HTML file must use UTF-8 encoding."
+msgstr "file_encoding: HTML-файл должен иметь кодировку UTF-8."
+
+#: apps/monitoring/management/commands/parse_product.py:49
+msgid ""
+"Extract product data from a local UTF-8 HTML file without network requests."
+msgstr ""
+"Извлечь данные товара из локального HTML-файла UTF-8 (без сетевых запросов)."
+
+#: apps/monitoring/management/commands/parse_product.py:54
+msgid "Path to a local UTF-8 HTML file, no larger than 2 MiB."
+msgstr "Путь к локальному HTML-файлу UTF-8, не более 2 МиБ."
+
+#: apps/monitoring/management/commands/parse_product.py:56
+#, python-format
+msgid "CSS selector for %(field)s."
+msgstr "CSS-селектор поля %(field)s."
+
+#: apps/monitoring/management/commands/parse_product.py:58
+#, python-format
+msgid "HTML attribute for %(field)s; defaults to element text."
+msgstr "HTML-атрибут поля %(field)s; по умолчанию — текст."
+
+#: apps/monitoring/management/commands/parse_product.py:60
+msgid "Explicit currency, for example RUB."
+msgstr "Явная валюта, например RUB."
+
+#: apps/monitoring/models.py:22
+msgid "Off"
+msgstr "Выключены"
+
+#: apps/monitoring/models.py:23
+msgid "On any price change"
+msgstr "При любом изменении цены"
+
+#: apps/monitoring/models.py:24
+msgid "On a price decrease"
+msgstr "При снижении цены"
+
+#: apps/monitoring/models.py:25
+msgid "On a downward threshold crossing"
+msgstr "При пересечении порога вниз"
+
+#: apps/monitoring/models.py:28
+msgid "Every hour"
+msgstr "Каждый час"
+
+#: apps/monitoring/models.py:29
+msgid "Every 3 hours"
+msgstr "Каждые 3 часа"
+
+#: apps/monitoring/models.py:30
+msgid "Every 6 hours"
+msgstr "Каждые 6 часов"
+
+#: apps/monitoring/models.py:31
+msgid "Every 12 hours"
+msgstr "Каждые 12 часов"
+
+#: apps/monitoring/models.py:32
+msgid "Every 24 hours"
+msgstr "Каждые 24 часа"
+
+#: apps/monitoring/models.py:74 templates/monitoring/_status.html:2
+msgid "Queued"
+msgstr "В очереди"
+
+#: apps/monitoring/models.py:75 templates/monitoring/_status.html:2
+msgid "Running"
+msgstr "Выполняется"
+
+#: apps/monitoring/models.py:76 templates/monitoring/_status.html:2
+msgid "Succeeded"
+msgstr "Успешно"
+
+#: apps/monitoring/models.py:77 templates/monitoring/_status.html:2
+msgid "Error"
+msgstr "Ошибка"
+
+#: apps/monitoring/models.py:78 templates/monitoring/_status.html:2
+msgid "Cancelled"
+msgstr "Отменена"
+
+#: apps/monitoring/models.py:120
+msgid "An existing check's settings cannot be changed."
+msgstr "Настройки уже созданной проверки изменять нельзя."
+
+#: apps/monitoring/models.py:126
+msgid "In stock"
+msgstr "В наличии"
+
+#: apps/monitoring/models.py:127
+msgid "Out of stock"
+msgstr "Нет в наличии"
+
+#: apps/monitoring/models.py:128
+msgid "Preorder"
+msgstr "Предзаказ"
+
+#: apps/monitoring/models.py:129 templates/monitoring/detail.html:16
+msgid "Unknown"
+msgstr "Неизвестно"
+
+#: apps/monitoring/scheduling.py:36
+msgid "Invalid schedule state."
+msgstr "Некорректное состояние расписания."
+
+#: apps/monitoring/scheduling.py:38
+msgid "Choose an interval: 1, 3, 6, 12 or 24 hours."
+msgstr "Выберите интервал: 1, 3, 6, 12 или 24 часа."
+
+#: apps/monitoring/scheduling.py:120
+msgid "Не удалось подтвердить выполнение задания после повторных отправок."
+msgstr "Не удалось подтвердить выполнение задания после повторных отправок."
+
+#: apps/monitoring/scraping/extractors.py:42
+msgid "Одно значение наличия настроено для разных состояний."
+msgstr "Одно значение наличия настроено для разных состояний."
+
+#: apps/monitoring/scraping/extractors.py:47
+msgid "Атрибут требует соответствующего CSS-селектора."
+msgstr "Атрибут требует соответствующего CSS-селектора."
+
+#: apps/monitoring/scraping/extractors.py:51
+msgid "CSS-селектор пуст или слишком длинный."
+msgstr "CSS-селектор пуст или слишком длинный."
+
+#: apps/monitoring/scraping/extractors.py:55
+msgid "Неверный CSS-селектор."
+msgstr "Неверный CSS-селектор."
+
+#: apps/monitoring/scraping/extractors.py:57
+msgid "CSS-селектор не нашёл элемент."
+msgstr "CSS-селектор не нашёл элемент."
+
+#: apps/monitoring/scraping/extractors.py:59
+msgid "CSS-селектор нашёл несколько элементов."
+msgstr "CSS-селектор нашёл несколько элементов."
+
+#: apps/monitoring/scraping/extractors.py:64
+msgid "Атрибут выбранного элемента отсутствует."
+msgstr "Атрибут выбранного элемента отсутствует."
+
+#: apps/monitoring/scraping/extractors.py:82
+msgid ""
+"Элемент содержит несколько числовых частей; уточните селектор или атрибут "
+"цены."
+msgstr ""
+"Элемент содержит несколько числовых частей; уточните селектор или атрибут "
+"цены."
+
+#: apps/monitoring/scraping/extractors.py:88
+msgid "Выбранный элемент пуст."
+msgstr "Выбранный элемент пуст."
+
+#: apps/monitoring/scraping/extractors.py:95
+msgid "На странице обнаружено несколько разных значений."
+msgstr "На странице обнаружено несколько разных значений."
+
+#: apps/monitoring/scraping/extractors.py:144
+msgid "Блок JSON-LD содержит некорректные данные."
+msgstr "Блок JSON-LD содержит некорректные данные."
+
+#: apps/monitoring/scraping/extractors.py:151
+msgid "Структура JSON-LD слишком большая."
+msgstr "Структура JSON-LD слишком большая."
+
+#: apps/monitoring/scraping/extractors.py:180
+#: apps/monitoring/scraping/extractors.py:184
+msgid "Ссылка JSON-LD на предложение не найдена."
+msgstr "Ссылка JSON-LD на предложение не найдена."
+
+#: apps/monitoring/scraping/extractors.py:201
+msgid "Идентификатор JSON-LD содержит разные определения."
+msgstr "Идентификатор JSON-LD содержит разные определения."
+
+#: apps/monitoring/scraping/extractors.py:206
+msgid "JSON-LD описывает несколько разных товаров."
+msgstr "JSON-LD описывает несколько разных товаров."
+
+#: apps/monitoring/scraping/extractors.py:212
+msgid "Название товара в JSON-LD имеет неверный формат."
+msgstr "Название товара в JSON-LD имеет неверный формат."
+
+#: apps/monitoring/scraping/extractors.py:227
+msgid "Предложение JSON-LD имеет неверный формат."
+msgstr "Предложение JSON-LD имеет неверный формат."
+
+#: apps/monitoring/scraping/extractors.py:231
+msgid "У товара несколько разных предложений; уточните источник цены."
+msgstr "У товара несколько разных предложений; уточните источник цены."
+
+#: apps/monitoring/scraping/extractors.py:238
+msgid ""
+"Диапазон, составная цена или условия оплаты требуют отдельной настройки."
+msgstr ""
+"Диапазон, составная цена или условия оплаты требуют отдельной настройки."
+
+#: apps/monitoring/scraping/extractors.py:240
+msgid "Тип предложения JSON-LD не поддерживается."
+msgstr "Тип предложения JSON-LD не поддерживается."
+
+#: apps/monitoring/scraping/extractors.py:243
+msgid "Валюта в JSON-LD имеет неверный формат."
+msgstr "Валюта в JSON-LD имеет неверный формат."
+
+#: apps/monitoring/scraping/extractors.py:246
+msgid "В JSON-LD и настройках указаны разные валюты."
+msgstr "В JSON-LD и настройках указаны разные валюты."
+
+#: apps/monitoring/scraping/extractors.py:250
+msgid "Наличие в JSON-LD имеет неверный формат."
+msgstr "Наличие в JSON-LD имеет неверный формат."
+
+#: apps/monitoring/scraping/extractors.py:267
+msgid "HTML-страница пуста."
+msgstr "HTML-страница пуста."
+
+#: apps/monitoring/scraping/extractors.py:269
+msgid "HTML-страница превышает допустимый размер."
+msgstr "HTML-страница превышает допустимый размер."
+
+#: apps/monitoring/scraping/extractors.py:276
+msgid "Выбранная валюта не соответствует настройке."
+msgstr "Выбранная валюта не соответствует настройке."
+
+#: apps/monitoring/scraping/extractors.py:301
+msgid "Метаданные и настройки содержат разные валюты."
+msgstr "Метаданные и настройки содержат разные валюты."
+
+#: apps/monitoring/scraping/extractors.py:318
+msgid "Не удалось определить название товара."
+msgstr "Не удалось определить название товара."
+
+#: apps/monitoring/scraping/extractors.py:320
+msgid "Название товара слишком длинное."
+msgstr "Название товара слишком длинное."
+
+#: apps/monitoring/scraping/extractors.py:322
+msgid "Цена не найдена; настройте CSS-селектор или проверьте страницу."
+msgstr "Цена не найдена; настройте CSS-селектор или проверьте страницу."
+
+#: apps/monitoring/scraping/extractors.py:324
+msgid "Валюта цены не определена; укажите её код."
+msgstr "Валюта цены не определена; укажите её код."
+
+#: apps/monitoring/scraping/fetcher.py:68
+msgid "Превышено общее время загрузки страницы."
+msgstr "Превышено общее время загрузки страницы."
+
+#: apps/monitoring/scraping/fetcher.py:86
+msgid "Не удалось декодировать страницу в заявленной кодировке."
+msgstr "Не удалось декодировать страницу в заявленной кодировке."
+
+#: apps/monitoring/scraping/fetcher.py:93
+msgid "Некорректный Content-Length."
+msgstr "Некорректный Content-Length."
+
+#: apps/monitoring/scraping/fetcher.py:95
+#: apps/monitoring/scraping/fetcher.py:108
+msgid "Ответ сайта превышает ограничение размера."
+msgstr "Ответ сайта превышает ограничение размера."
+
+#: apps/monitoring/scraping/fetcher.py:98
+msgid "Неподдерживаемое сжатие ответа."
+msgstr "Неподдерживаемое сжатие ответа."
+
+#: apps/monitoring/scraping/fetcher.py:113
+msgid "Несколько сжатых потоков не поддерживаются."
+msgstr "Несколько сжатых потоков не поддерживаются."
+
+#: apps/monitoring/scraping/fetcher.py:116
+msgid "Распакованный ответ превышает ограничение размера."
+msgstr "Распакованный ответ превышает ограничение размера."
+
+#: apps/monitoring/scraping/fetcher.py:118
+msgid "Сжатый ответ оборван."
+msgstr "Сжатый ответ оборван."
+
+#: apps/monitoring/scraping/fetcher.py:120
+msgid "Некорректный сжатый ответ сайта."
+msgstr "Некорректный сжатый ответ сайта."
+
+#: apps/monitoring/scraping/fetcher.py:170
+msgid "Не удалось проверить общий лимит запросов; загрузка остановлена."
+msgstr "Не удалось проверить общий лимит запросов; загрузка остановлена."
+
+#: apps/monitoring/scraping/fetcher.py:172
+msgid "Сайт не вернул доступную страницу."
+msgstr "Сайт не вернул доступную страницу."
+
+#: apps/monitoring/scraping/fetcher.py:189
+msgid "Вместо robots.txt получена HTML-страница."
+msgstr "Вместо robots.txt получена HTML-страница."
+
+#: apps/monitoring/scraping/fetcher.py:192
+msgid "Правила robots.txt временно недоступны."
+msgstr "Правила robots.txt временно недоступны."
+
+#: apps/monitoring/scraping/fetcher.py:198
+msgid "Не удалось безопасно получить robots.txt."
+msgstr "Не удалось безопасно получить robots.txt."
+
+#: apps/monitoring/scraping/fetcher.py:204
+msgid "robots.txt запрещает проверку этой страницы."
+msgstr "robots.txt запрещает проверку этой страницы."
+
+#: apps/monitoring/scraping/fetcher.py:212
+msgid "Обнаружен цикл перенаправлений."
+msgstr "Обнаружен цикл перенаправлений."
+
+#: apps/monitoring/scraping/fetcher.py:233
+#: apps/monitoring/scraping/fetcher.py:246
+msgid "Превышен предел перенаправлений."
+msgstr "Превышен предел перенаправлений."
+
+#: apps/monitoring/scraping/fetcher.py:236
+msgid "Перенаправление не содержит Location."
+msgstr "Перенаправление не содержит Location."
+
+#: apps/monitoring/scraping/fetcher.py:240
+msgid "Сайт вернул некорректный адрес перенаправления."
+msgstr "Сайт вернул некорректный адрес перенаправления."
+
+#: apps/monitoring/scraping/fetcher.py:243
+msgid "Переход с HTTPS на HTTP запрещён."
+msgstr "Переход с HTTPS на HTTP запрещён."
+
+#: apps/monitoring/scraping/fetcher.py:272
+msgid "Сайт вернул неподдерживаемый тип содержимого."
+msgstr "Сайт вернул неподдерживаемый тип содержимого."
+
+#: apps/monitoring/scraping/fetcher.py:277
+msgid "Сайт не ответил за отведённое время."
+msgstr "Сайт не ответил за отведённое время."
+
+#: apps/monitoring/scraping/fetcher.py:279
+msgid "Ошибка соединения с сайтом или проверки TLS."
+msgstr "Ошибка соединения с сайтом или проверки TLS."
+
+#: apps/monitoring/scraping/normalization.py:50
+msgid "Символ цены не соответствует валюте."
+msgstr "Символ цены не соответствует валюте."
+
+#: apps/monitoring/scraping/normalization.py:51
+msgid "Неоднозначный символ валюты: укажите её код."
+msgstr "Неоднозначный символ валюты: укажите её код."
+
+#: apps/monitoring/scraping/normalization.py:52
+msgid "Валюта не поддерживается или указана неверно."
+msgstr "Валюта не поддерживается или указана неверно."
+
+#: apps/monitoring/scraping/normalization.py:59
+msgid "Цена имеет неверный формат."
+msgstr "Цена имеет неверный формат."
+
+#: apps/monitoring/scraping/normalization.py:64
+msgid "Цена должна быть конечным неотрицательным числом."
+msgstr "Цена должна быть конечным неотрицательным числом."
+
+#: apps/monitoring/scraping/normalization.py:66
+msgid "Цена содержит более четырёх десятичных знаков."
+msgstr "Цена содержит более четырёх десятичных знаков."
+
+#: apps/monitoring/scraping/normalization.py:75
+msgid "Цена содержит диапазон или посторонний текст."
+msgstr "Цена содержит диапазон или посторонний текст."
+
+#: apps/monitoring/scraping/normalization.py:81
+#: apps/monitoring/scraping/normalization.py:92
+msgid "Неверное разделение разрядов цены."
+msgstr "Неверное разделение разрядов цены."
+
+#: apps/monitoring/scraping/normalization.py:94
+#: apps/monitoring/scraping/normalization.py:107
+msgid "Неверная дробная часть цены."
+msgstr "Неверная дробная часть цены."
+
+#: apps/monitoring/scraping/normalization.py:102
+msgid "Неверный формат цены."
+msgstr "Неверный формат цены."
+
+#: apps/monitoring/scraping/normalization.py:105
+msgid "Разделитель цены неоднозначен; используйте явный формат."
+msgstr "Разделитель цены неоднозначен; используйте явный формат."
+
+#: apps/monitoring/scraping/normalization.py:125
+msgid "Цена должна быть числом или строкой с числом."
+msgstr "Цена должна быть числом или строкой с числом."
+
+#: apps/monitoring/scraping/normalization.py:128
+msgid "Цена отсутствует или выбранный элемент пуст."
+msgstr "Цена отсутствует или выбранный элемент пуст."
+
+#: apps/monitoring/scraping/normalization.py:130
+msgid "Строка цены слишком длинная."
+msgstr "Строка цены слишком длинная."
+
+#: apps/monitoring/scraping/normalization.py:137
+msgid "Выбранный элемент содержит несколько цен."
+msgstr "Выбранный элемент содержит несколько цен."
+
+#: apps/monitoring/scraping/normalization.py:144
+msgid "В цене и настройках указаны разные валюты."
+msgstr "В цене и настройках указаны разные валюты."
+
+#: apps/monitoring/scraping/normalization.py:149
+msgid "В цене указаны разные валюты."
+msgstr "В цене указаны разные валюты."
+
+#: apps/monitoring/scraping/rates.py:27
+msgid "Ограничение частоты запросов к сайту."
+msgstr "Ограничение частоты запросов к сайту."
+
+#: apps/monitoring/scraping/robots.py:55
+msgid "Файл robots.txt слишком большой."
+msgstr "Файл robots.txt слишком большой."
+
+#: apps/monitoring/scraping/robots.py:74
+msgid "Слишком сложные правила robots.txt."
+msgstr "Слишком сложные правила robots.txt."
+
+#: apps/monitoring/scraping/robots.py:76
+msgid "Некорректные правила robots.txt."
+msgstr "Некорректные правила robots.txt."
+
+#: apps/monitoring/scraping/robots.py:82 apps/monitoring/scraping/robots.py:84
+msgid "Некорректный Crawl-delay."
+msgstr "Некорректный Crawl-delay."
+
+#: apps/monitoring/scraping/safety.py:57 apps/monitoring/scraping/safety.py:59
+msgid "Некорректное имя сайта."
+msgstr "Некорректное имя сайта."
+
+#: apps/monitoring/scraping/safety.py:65
+msgid "URL должен быть непустой строкой до 2048 символов."
+msgstr "URL должен быть непустой строкой до 2048 символов."
+
+#: apps/monitoring/scraping/safety.py:67
+msgid "URL содержит недопустимые символы или фрагмент."
+msgstr "URL содержит недопустимые символы или фрагмент."
+
+#: apps/monitoring/scraping/safety.py:83
+msgid "Допустим только HTTP(S) URL без логина и нестандартного порта."
+msgstr "Допустим только HTTP(S) URL без логина и нестандартного порта."
+
+#: apps/monitoring/scraping/safety.py:88
+msgid "Внутренние адреса запрещены."
+msgstr "Внутренние адреса запрещены."
+
+#: apps/monitoring/scraping/safety.py:91
+msgid "Внутренние и служебные IP-адреса запрещены."
+msgstr "Внутренние и служебные IP-адреса запрещены."
+
+#: apps/monitoring/scraping/safety.py:94
+msgid "Сайт отсутствует в разрешённом списке."
+msgstr "Сайт отсутствует в разрешённом списке."
+
+#: apps/monitoring/scraping/safety.py:100
+msgid "Некорректный URL страницы."
+msgstr "Некорректный URL страницы."
+
+#: apps/monitoring/scraping/safety.py:112
+msgid "Запрещённый IP-адрес."
+msgstr "Запрещённый IP-адрес."
+
+#: apps/monitoring/scraping/safety.py:115
+msgid "DNS resolver занят; повторите позднее."
+msgstr "DNS resolver занят; повторите позднее."
+
+#: apps/monitoring/scraping/safety.py:122
+msgid "Превышено время разрешения DNS."
+msgstr "Превышено время разрешения DNS."
+
+#: apps/monitoring/scraping/safety.py:124
+msgid "Не удалось определить адрес сайта."
+msgstr "Не удалось определить адрес сайта."
+
+#: apps/monitoring/scraping/safety.py:128
+msgid "DNS вернул неподдерживаемый адрес."
+msgstr "DNS вернул неподдерживаемый адрес."
+
+#: apps/monitoring/scraping/safety.py:131
+msgid "DNS сайта содержит внутренний или служебный адрес."
+msgstr "DNS сайта содержит внутренний или служебный адрес."
+
+#: apps/monitoring/scraping/safety.py:135
+msgid "DNS не вернул адрес сайта."
+msgstr "DNS не вернул адрес сайта."
+
+#: apps/monitoring/scraping/transport.py:69
+msgid "Соединение с непроверенным адресом запрещено."
+msgstr "Соединение с непроверенным адресом запрещено."
+
+#: apps/monitoring/scraping/transport.py:106
+msgid "Запрос не содержит проверенный IP и срок выполнения."
+msgstr "Запрос не содержит проверенный IP и срок выполнения."
+
+#: apps/monitoring/templatetags/monitoring.py:16
+msgid "Availability could not be determined."
+msgstr "Не удалось определить наличие товара."
+
+#: apps/monitoring/templatetags/monitoring.py:17
+msgid "The product is out of stock and has no price."
+msgstr "Товар отсутствует в наличии; цена не указана."
+
+#: apps/monitoring/views.py:69
+msgid "The monitor has been created. You can now start its first check."
+msgstr "Мониторинг создан. Теперь можно запустить первую проверку."
+
+#: apps/monitoring/views.py:105
+msgid ""
+"Each selected monitor must have a price in the same currency during the "
+"selected period to compare them."
+msgstr ""
+"Для сравнения у каждого выбранного мониторинга должна быть цена в одной "
+"валюте за выбранный период."
+
+#: apps/monitoring/views.py:132
+msgid "Select CSV or XLSX."
+msgstr "Выберите CSV или XLSX."
+
+#: apps/monitoring/views.py:138
+#, python-format
+msgid ""
+"Exports are limited to %(limit)s observations. Choose a shorter period or "
+"specific dates."
+msgstr ""
+"Экспорт ограничен %(limit)s наблюдениями. Уменьшите период или задайте даты."
+
+#: apps/monitoring/views.py:153 apps/monitoring/views.py:160
+msgid "Select 2 to 5 monitors from the list."
+msgstr "Выберите от 2 до 5 мониторингов в списке."
+
+#: apps/monitoring/views.py:185
+msgid "Schedule saved."
+msgstr "Расписание сохранено."
+
+#: apps/monitoring/views.py:185
+msgid "Automatic monitoring is paused."
+msgstr "Автоматический мониторинг приостановлен."
+
+#: apps/monitoring/views.py:196
+msgid "Archived monitors are read-only."
+msgstr "Архивный мониторинг доступен только для просмотра."
+
+#: apps/monitoring/views.py:211
+msgid "Monitor settings have been saved."
+msgstr "Настройки мониторинга сохранены."
+
+#: apps/monitoring/views.py:228
+msgid "The monitor has been archived. Check history is preserved."
+msgstr "Мониторинг архивирован. История проверок сохранена."
+
+#: apps/monitoring/views.py:244
+msgid ""
+"Could not send the task to the queue. The error is saved in the check log; "
+"try again later."
+msgstr ""
+"Не удалось отправить задание в очередь. Ошибка сохранена в истории; "
+"повторите проверку позднее."
+
+#: apps/monitoring/views.py:246
+msgid ""
+"The queue connection was interrupted. The accepted check's state is "
+"preserved; refresh the page before resending."
+msgstr ""
+"Связь с очередью прервана. Состояние уже принятой проверки сохранено; "
+"обновите страницу перед повторной отправкой."
+
+#: apps/monitoring/views.py:251
+msgid "The check has been queued. Refresh the page to see the result."
+msgstr ""
+"Проверка поставлена в очередь. Обновите страницу, чтобы увидеть результат."
+
+#: apps/monitoring/views.py:253
+msgid "The existing task has been resent. No new check was created."
+msgstr "Повторно отправлено существующее задание. Новая проверка не создана."
+
+#: apps/monitoring/views.py:253
+msgid ""
+"The task has already been sent. Wait for the result; no new check was "
+"created."
+msgstr ""
+"Задание уже отправлено. Дождитесь результата; новая проверка не создана."
+
+#: apps/notifications/forms.py:7
+msgid "Notification email address"
+msgstr "Email для уведомлений"
+
+#: apps/notifications/forms.py:8
+msgid "Receive email notifications"
+msgstr "Получать уведомления по email"
+
+#: apps/notifications/forms.py:13
+msgid "Enter a valid email address to enable email notifications."
+msgstr "Для включения email-уведомлений укажите корректный адрес."
+
+#: apps/notifications/models.py:14
+msgid "Not requested"
+msgstr "Не запрошено"
+
+#: apps/notifications/models.py:15
+msgid "Waiting to send"
+msgstr "Ожидает отправки"
+
+#: apps/notifications/models.py:16
+msgid "Sending"
+msgstr "Отправляется"
+
+#: apps/notifications/models.py:17
+msgid "Accepted by the email backend"
+msgstr "Передано почтовому backend"
+
+#: apps/notifications/models.py:18
+msgid "Sending failed"
+msgstr "Ошибка отправки"
+
+#: apps/notifications/models.py:19
+msgid "Sending result unknown"
+msgstr "Результат отправки неизвестен"
+
+#: apps/notifications/models.py:20
+msgid "Sending cancelled"
+msgstr "Отправка отменена"
+
+#: apps/notifications/services.py:97
+#, python-format
+msgid "PriceWatch: price change — %(name)s"
+msgstr "PriceWatch: изменение цены — %(name)s"
+
+#: apps/notifications/views.py:59
+msgid ""
+"Email preferences have been saved. Previous notifications will not be resent."
+msgstr ""
+"Настройки email сохранены. Старые уведомления повторно не отправляются."
+
+#: config/urls.py:15
+msgid "PriceWatch administration"
+msgstr "PriceWatch — администрирование"
+
+#: config/urls.py:17
+msgid "Access management"
+msgstr "Управление доступом"
+
+#: templates/403.html:3
+msgid "Access denied — PriceWatch"
+msgstr "Доступ ограничен — PriceWatch"
+
+#: templates/403.html:7
+msgid "Error 403"
+msgstr "Ошибка 403"
+
+#: templates/403.html:8
+msgid "Access denied"
+msgstr "Доступ ограничен"
+
+#: templates/403.html:9
+msgid "Your account does not have access to this page."
+msgstr "У вашей учётной записи нет доступа к этой странице."
+
+#: templates/403.html:10 templates/404.html:10 templates/500.html:10
+msgid "Go to dashboard"
+msgstr "Перейти в кабинет"
+
+#: templates/404.html:3
+msgid "Page not found — PriceWatch"
+msgstr "Страница не найдена — PriceWatch"
+
+#: templates/404.html:7
+msgid "Error 404"
+msgstr "Ошибка 404"
+
+#: templates/404.html:8
+msgid "Page not found"
+msgstr "Страница не найдена"
+
+#: templates/404.html:9
+msgid "The address may have changed or contain a typo."
+msgstr "Возможно, адрес изменился или в нём есть опечатка."
+
+#: templates/500.html:3
+msgid "Could not load the page — PriceWatch"
+msgstr "Не удалось загрузить страницу — PriceWatch"
+
+#: templates/500.html:7
+msgid "Error 500"
+msgstr "Ошибка 500"
+
+#: templates/500.html:8
+msgid "Could not load the page"
+msgstr "Не удалось загрузить страницу"
+
+#: templates/500.html:9
+msgid ""
+"A server error occurred. Try again later. Contact the administrator if the "
+"error persists."
+msgstr ""
+"На сервере произошла ошибка. Попробуйте открыть страницу позже. Если ошибка "
+"повторится, сообщите администратору."
+
+#: templates/base.html:17
+msgid "Skip to content"
+msgstr "Перейти к содержимому"
+
+#: templates/base.html:20
+msgid "PriceWatch home"
+msgstr "PriceWatch — главная"
+
+#: templates/base.html:30 templates/base.html:33
+msgid "Language"
+msgstr "Язык"
+
+#: templates/base.html:39
+msgid "Account"
+msgstr "Аккаунт"
+
+#: templates/base.html:40
+msgid "Monitors"
+msgstr "Мониторинги"
+
+#: templates/base.html:41 templates/notifications/list.html:7
+msgid "Notifications"
+msgstr "Уведомления"
+
+#: templates/base.html:41
+#, python-format
+msgid "Unread: %(v0)s"
+msgstr "Непрочитанных: %(v0)s"
+
+#: templates/base.html:43
+msgid "Administration"
+msgstr "Администрирование"
+
+#: templates/base.html:51
+msgid "Sign out"
+msgstr "Выйти"
+
+#: templates/base.html:55
+msgid "Private access"
+msgstr "Закрытый доступ"
+
+#: templates/base.html:74
+msgid "Keep an eye on every price."
+msgstr "Внимание к каждой цене."
+
+#: templates/core/dashboard.html:4
+msgid "Dashboard — PriceWatch"
+msgstr "Личный кабинет — PriceWatch"
+
+#: templates/core/dashboard.html:10
+msgid "Dashboard"
+msgstr "Личный кабинет"
+
+#: templates/core/dashboard.html:11
+msgid "Welcome"
+msgstr "Добро пожаловать"
+
+#: templates/core/dashboard.html:12
+msgid "Add products and check their prices when you need to."
+msgstr "Добавляйте товары и проверяйте цены в удобное время."
+
+#: templates/core/dashboard.html:14
+msgid "Account connected"
+msgstr "Аккаунт подключён"
+
+#: templates/core/dashboard.html:19 templates/monitoring/list.html:8
+msgid "Workspace"
+msgstr "Рабочее пространство"
+
+#: templates/core/dashboard.html:33
+msgid "Price tracking"
+msgstr "Отслеживание цен"
+
+#: templates/core/dashboard.html:34
+msgid "Your monitors and price history"
+msgstr "Ваши мониторинги и история цен"
+
+#: templates/core/dashboard.html:35
+msgid "Open your monitors to review prices, history and check results."
+msgstr ""
+"Откройте мониторинги, чтобы посмотреть цены, историю и результаты проверок."
+
+#: templates/core/dashboard.html:37
+msgid "Getting started"
+msgstr "Начало работы"
+
+#: templates/core/dashboard.html:38
+msgid "Start with your first observation"
+msgstr "Всё начинается с первого наблюдения"
+
+#: templates/core/dashboard.html:39
+msgid ""
+"Save a product URL, start a check and view the results. History remains "
+"available even when the site is temporarily unavailable."
+msgstr ""
+"Сохраните URL товара, запустите проверку и просматривайте результаты. "
+"История остаётся доступной, даже если сайт временно не отвечает."
+
+#: templates/core/dashboard.html:43 templates/core/dashboard.html:47
+#: templates/monitoring/list.html:8
+msgid "My monitors"
+msgstr "Мои мониторинги"
+
+#: templates/core/dashboard.html:44 templates/core/dashboard.html:46
+msgid "Add monitor"
+msgstr "Добавить мониторинг"
+
+#: templates/core/dashboard.html:53
+msgid ""
+"Your workspace is private. New accounts are created by the administrator."
+msgstr ""
+"Доступ к кабинету есть только у вас. Новые учётные записи создаёт "
+"администратор."
+
+#: templates/core/dashboard.html:56
+msgid ""
+"Check products manually or on a schedule. Loading runs in the background."
+msgstr ""
+"Проверяйте товары вручную или по расписанию. Загрузка выполняется в фоне."
+
+#: templates/monitoring/_analytics.html:4
+msgid "Price comparison"
+msgstr "Сравнение цен"
+
+#: templates/monitoring/_analytics.html:4
+msgid "Price history"
+msgstr "История цен"
+
+#: templates/monitoring/_analytics.html:9
+msgid "Apply"
+msgstr "Применить"
+
+#: templates/monitoring/_analytics.html:11 templates/monitoring/export.html:13
+msgid "Download CSV"
+msgstr "Скачать CSV"
+
+#: templates/monitoring/_analytics.html:12 templates/monitoring/export.html:14
+msgid "Download XLSX"
+msgstr "Скачать XLSX"
+
+#: templates/monitoring/_analytics.html:15
+msgid ""
+"Dates are inclusive in the displayed timezone and narrow the selected "
+"period. Choose “All time” for a custom date range."
+msgstr ""
+"Даты включительно, в указанном часовом поясе; они уточняют выбранный период. "
+"Для произвольных дат выберите «Всё время»."
+
+#: templates/monitoring/_analytics.html:19
+msgid ""
+"The chart is unavailable. Statistics and exact values remain available in "
+"the table."
+msgstr ""
+"График недоступен. Статистика и точные значения остаются доступны в таблице."
+
+#: templates/monitoring/_analytics.html:19
+#, python-format
+msgid ""
+"Price history chart in %(v0)s. Exact values are available in the statistics "
+"and table below."
+msgstr ""
+"График истории цен в %(v0)s. Точные значения представлены в статистике и "
+"таблице ниже."
+
+#: templates/monitoring/_analytics.html:20
+msgid ""
+"Hover over a point to see its date and price. Click a legend label to hide a "
+"series."
+msgstr ""
+"Наведите указатель на точку, чтобы увидеть дату и цену. Нажатие на название "
+"в легенде скрывает ряд."
+
+#: templates/monitoring/_analytics.html:21
+msgid ""
+"The chart requires JavaScript. Statistics and the table remain available "
+"without it."
+msgstr "Для графика нужен JavaScript. Статистика и таблица доступны без него."
+
+#: templates/monitoring/_analytics.html:22
+msgid "No prices for this period yet"
+msgstr "За этот период цен пока нет"
+
+#: templates/monitoring/_analytics.html:22
+msgid ""
+"Choose another period or wait for a successful check with a price. An "
+"unavailable product without a price is not treated as zero."
+msgstr ""
+"Выберите другой период или дождитесь успешной проверки с ценой. Отсутствие "
+"товара без цены не считается нулевой ценой."
+
+#: templates/monitoring/_analytics.html:27
+msgid "Minimum"
+msgstr "Минимальная"
+
+#: templates/monitoring/_analytics.html:28
+msgid "Maximum"
+msgstr "Максимальная"
+
+#: templates/monitoring/_analytics.html:29
+msgid "Average per observation"
+msgstr "Средняя по наблюдениям"
+
+#: templates/monitoring/_analytics.html:29
+msgid "Rounded to 2 decimal places for display"
+msgstr "Округлена до 2 знаков для отображения"
+
+#: templates/monitoring/_analytics.html:30
+msgid "Latest in period"
+msgstr "Последняя в периоде"
+
+#: templates/monitoring/_analytics.html:35
+msgid "percentage is undefined: the initial price is zero"
+msgstr "процент не определён: начальная цена равна нулю"
+
+#: templates/monitoring/_analytics.html:36
+#, python-format
+msgid ""
+"From %(v0)s %(v1)s (%(v2)s) to %(v3)s %(v4)s (%(v5)s). Valid prices: %(v6)s."
+msgstr ""
+"От %(v0)s %(v1)s (%(v2)s) до %(v3)s %(v4)s (%(v5)s). Валидных цен: %(v6)s."
+
+#: templates/monitoring/_analytics.html:38
+msgid ""
+"Only one observation: the change is zero. A trend will become available "
+"after the next check."
+msgstr ""
+"Единственное наблюдение: изменение равно нулю; динамику можно оценить после "
+"следующей проверки."
+
+#: templates/monitoring/_analytics.html:38
+msgid "The price did not change during the selected period."
+msgstr "Цена не менялась в выбранном периоде."
+
+#: templates/monitoring/_analytics.html:38
+msgid ""
+"The first and last prices match, but there were changes within the period."
+msgstr "Первая и последняя цены совпадают, но внутри периода были изменения."
+
+#: templates/monitoring/_analytics.html:40
+#, python-format
+msgid ""
+"Showing up to 400 sampled points from %(v0)s observations. First, last and "
+"extreme prices are retained. Lines are disabled so omitted observations do "
+"not hide gaps. Statistics use all observations in the period."
+msgstr ""
+"Показана выборка до 400 точек из %(v0)s наблюдений. Сохранены первая, "
+"последняя и крайние цены. Линия отключена, чтобы пропущенные наблюдения не "
+"скрывали разрывы. Статистика рассчитана по всей истории периода."
+
+#: templates/monitoring/_analytics.html:43
+msgid ""
+"The chart shows observed prices; intermediate values are unknown. An "
+"observation without a price breaks the line. Technical errors are listed in "
+"the check log and are not treated as prices. Chart prices are rounded by the "
+"browser; exact prices are available in the table."
+msgstr ""
+"График показывает измеренные цены, промежуточные значения неизвестны. "
+"Наблюдение без цены разрывает линию. Технические ошибки находятся в журнале "
+"проверок и не превращаются в цены. Денежные значения в графике округляются "
+"браузером; точные цены доступны в таблице."
+
+#: templates/monitoring/_history_pagination.html:5
+#: templates/monitoring/_pagination.html:4
+msgid "Previous"
+msgstr "Назад"
+
+#: templates/monitoring/_history_pagination.html:6
+#: templates/monitoring/_pagination.html:5
+#, python-format
+msgid "Page %(v0)s of %(v1)s"
+msgstr "Страница %(v0)s из %(v1)s"
+
+#: templates/monitoring/_history_pagination.html:7
+#: templates/monitoring/_pagination.html:6
+msgid "Next"
+msgstr "Далее"
+
+#: templates/monitoring/_pagination.html:3
+msgid "History pages"
+msgstr "Страницы истории"
+
+#: templates/monitoring/_status.html:2
+msgid "No checks"
+msgstr "Нет проверок"
+
+#: templates/monitoring/archive.html:3
+msgid "Archive monitor — PriceWatch"
+msgstr "Архивирование — PriceWatch"
+
+#: templates/monitoring/archive.html:5
+msgid "← Back to product"
+msgstr "← К товару"
+
+#: templates/monitoring/archive.html:5
+msgid "Monitor management"
+msgstr "Управление мониторингом"
+
+#: templates/monitoring/archive.html:5
+#, python-format
+msgid "Archive “%(v0)s”?"
+msgstr "Архивировать «%(v0)s»?"
+
+#: templates/monitoring/archive.html:5
+msgid ""
+"New checks will be disabled and queued tasks cancelled. A check already "
+"running may save its result. All history will remain available in the "
+"archive."
+msgstr ""
+"Новые проверки будут отключены, задания в очереди отменены. Уже "
+"выполняющаяся проверка сможет сохранить свой результат. Вся история "
+"останется доступна в архиве."
+
+#: templates/monitoring/archive.html:5 templates/monitoring/detail.html:9
+#: templates/monitoring/detail.html:21 templates/monitoring/list.html:13
+#: templates/monitoring/list.html:26
+msgid "Archive"
+msgstr "Архивировать"
+
+#: templates/monitoring/archive.html:5 templates/monitoring/form.html:36
+msgid "Cancel"
+msgstr "Отмена"
+
+#: templates/monitoring/compare.html:3
+msgid "Price comparison — PriceWatch"
+msgstr "Сравнение цен — PriceWatch"
+
+#: templates/monitoring/compare.html:6 templates/monitoring/detail.html:7
+msgid "← Back to monitors"
+msgstr "← К мониторингам"
+
+#: templates/monitoring/compare.html:7
+msgid "Analytics"
+msgstr "Аналитика"
+
+#: templates/monitoring/compare.html:7
+msgid "Product comparison"
+msgstr "Сравнение товаров"
+
+#: templates/monitoring/compare.html:7
+msgid ""
+"Up to five monitors in one currency. Each product's statistics are "
+"calculated independently."
+msgstr ""
+"До пяти мониторингов в одной валюте. Данные каждого товара рассчитываются "
+"независимо."
+
+#: templates/monitoring/detail.html:9
+msgid "Product monitoring"
+msgstr "Мониторинг товара"
+
+#: templates/monitoring/detail.html:10 templates/monitoring/form.html:3
+msgid "Settings"
+msgstr "Настройки"
+
+#: templates/monitoring/detail.html:10
+msgid "Resend task"
+msgstr "Повторить отправку"
+
+#: templates/monitoring/detail.html:10
+msgid "Check now"
+msgstr "Проверить сейчас"
+
+#: templates/monitoring/detail.html:12
+#, python-format
+msgid "Archived on %(v0)s. History is preserved; new checks are disabled."
+msgstr ""
+"Мониторинг архивирован %(v0)s. История сохранена; новые проверки отключены."
+
+#: templates/monitoring/detail.html:13
+msgid "The check is running in the background."
+msgstr "Проверка выполняется в фоне."
+
+#: templates/monitoring/detail.html:13
+msgid "The check is waiting for a worker."
+msgstr "Проверка ожидает worker."
+
+#: templates/monitoring/detail.html:13
+msgid "Refresh status"
+msgstr "Обновить состояние"
+
+#: templates/monitoring/detail.html:13
+msgid ". Resending uses the same task and does not create another observation."
+msgstr ""
+". Повторная отправка использует то же задание и не создаёт новое наблюдение."
+
+#: templates/monitoring/detail.html:15 templates/monitoring/list.html:20
+msgid "Last known price"
+msgstr "Последняя известная цена"
+
+#: templates/monitoring/detail.html:15
+#, python-format
+msgid "Observed %(v0)s"
+msgstr "Получена %(v0)s"
+
+#: templates/monitoring/detail.html:15
+msgid "No successful check with a price yet"
+msgstr "Успешной проверки с ценой пока нет"
+
+#: templates/monitoring/detail.html:15
+msgid "This price was obtained from the previous URL."
+msgstr "Цена получена для предыдущего URL."
+
+#: templates/monitoring/detail.html:15
+msgid "Check the new URL."
+msgstr "Запустите проверку нового адреса."
+
+#: templates/monitoring/detail.html:16
+msgid "Last known availability"
+msgstr "Последнее известное наличие"
+
+#: templates/monitoring/detail.html:16
+#, python-format
+msgid "Checked %(v0)s"
+msgstr "Проверено %(v0)s"
+
+#: templates/monitoring/detail.html:16
+msgid "Available after a successful check"
+msgstr "Определится после успешной проверки"
+
+#: templates/monitoring/detail.html:16
+msgid ""
+"The last successful check confirmed an unavailable product without a price."
+msgstr "Последняя успешная проверка подтвердила отсутствие товара без цены."
+
+#: templates/monitoring/detail.html:17 templates/monitoring/detail.html:25
+#: templates/monitoring/list.html:20
+msgid "Next scheduled check"
+msgstr "Следующая плановая проверка"
+
+#: templates/monitoring/detail.html:17
+msgid "No checks yet"
+msgstr "Проверок ещё не было"
+
+#: templates/monitoring/detail.html:17
+msgid "Previous data is preserved."
+msgstr "Предыдущие данные сохранены."
+
+#: templates/monitoring/detail.html:21
+msgid "Automatic monitoring"
+msgstr "Автоматический мониторинг"
+
+#: templates/monitoring/detail.html:21
+msgid "Enabled"
+msgstr "Включён"
+
+#: templates/monitoring/detail.html:21
+msgid "Disabled / paused"
+msgstr "Выключен / пауза"
+
+#: templates/monitoring/detail.html:24
+msgid "Last scheduled dispatch"
+msgstr "Последняя постановка по расписанию"
+
+#: templates/monitoring/detail.html:24
+msgid "Not yet"
+msgstr "Ещё не было"
+
+#: templates/monitoring/detail.html:25
+msgid "Not scheduled"
+msgstr "Не запланирована"
+
+#: templates/monitoring/detail.html:33
+msgid "Save schedule"
+msgstr "Сохранить расписание"
+
+#: templates/monitoring/detail.html:35
+msgid ""
+"When enabled or resumed, the first check is scheduled for the next "
+"dispatcher cycle. Subsequent checks use the selected interval. Pausing "
+"cancels queued automatic checks."
+msgstr ""
+"При включении или возобновлении первая проверка запланирована на ближайший "
+"цикл диспетчера. Далее — выбранный интервал. Пауза отменяет ожидающие "
+"автоматические проверки."
+
+#: templates/monitoring/detail.html:37
+#, python-format
+msgid ""
+"Time: %(v0)s. The dispatcher checks schedules once a minute; the queue and "
+"site rules may delay execution."
+msgstr ""
+"Время: %(v0)s. Диспетчер проверяет расписания раз в минуту; очередь и "
+"правила сайта могут задержать выполнение."
+
+#: templates/monitoring/detail.html:42
+msgid "Observations for the selected period"
+msgstr "Наблюдения за выбранный период"
+
+#: templates/monitoring/detail.html:42
+#, python-format
+msgid "%(count)s record"
+msgid_plural "%(count)s records"
+msgstr[0] "%(count)s запись"
+msgstr[1] "%(count)s записи"
+msgstr[2] "%(count)s записей"
+
+#: templates/monitoring/detail.html:43
+msgid "Observation date"
+msgstr "Дата наблюдения"
+
+#: templates/monitoring/detail.html:43
+msgid "Availability and source"
+msgstr "Наличие и источник"
+
+#: templates/monitoring/detail.html:45
+msgid "Correct the filters to view observations."
+msgstr "Исправьте фильтры, чтобы увидеть наблюдения."
+
+#: templates/monitoring/detail.html:45
+msgid "No observations for the selected period."
+msgstr "Наблюдений за выбранный период нет."
+
+#: templates/monitoring/detail.html:47
+msgid "Observation pages"
+msgstr "Страницы наблюдений"
+
+#: templates/monitoring/detail.html:48
+msgid "Check log and technical errors"
+msgstr "Журнал проверок и технические ошибки"
+
+#: templates/monitoring/detail.html:48
+msgid "All time · separate from prices"
+msgstr "Всё время · отдельно от цен"
+
+#: templates/monitoring/detail.html:49
+msgid "Check"
+msgstr "Проверка"
+
+#: templates/monitoring/detail.html:49
+msgid "Status"
+msgstr "Состояние"
+
+#: templates/monitoring/detail.html:49
+msgid "Technical diagnostics"
+msgstr "Техническая диагностика"
+
+#: templates/monitoring/detail.html:50
+#, python-format
+msgid "Scheduled · %(v0)s"
+msgstr "По расписанию · %(v0)s"
+
+#: templates/monitoring/detail.html:50
+msgid "Manual"
+msgstr "Вручную"
+
+#: templates/monitoring/detail.html:50
+#, python-format
+msgid "Finished %(v0)s"
+msgstr "Завершена %(v0)s"
+
+#: templates/monitoring/detail.html:50
+#, python-format
+msgid "Started %(v0)s"
+msgstr "Начата %(v0)s"
+
+#: templates/monitoring/detail.html:50
+msgid "Waiting to run"
+msgstr "Ожидает выполнения"
+
+#: templates/monitoring/detail.html:51
+msgid "The observation is saved in the price history."
+msgstr "Наблюдение сохранено в истории цен."
+
+#: templates/monitoring/detail.html:53
+msgid "The check was cancelled."
+msgstr "Проверка отменена."
+
+#: templates/monitoring/detail.html:53
+msgid "The result will appear after the task completes."
+msgstr "Результат появится после выполнения задания."
+
+#: templates/monitoring/detail.html:54
+msgid "History starts with your first check"
+msgstr "История начнётся с первой проверки"
+
+#: templates/monitoring/detail.html:54
+msgid "Use “Check now” to start a check. Loading runs in the background."
+msgstr ""
+"Запустите проверку кнопкой «Проверить сейчас». Загрузка выполняется в фоне."
+
+#: templates/monitoring/detail.html:55
+msgid "Check log pages"
+msgstr "Страницы журнала"
+
+#: templates/monitoring/detail.html:56
+msgid "Archiving preserves history and disables new checks."
+msgstr "Архивирование сохраняет историю и отключает новые проверки."
+
+#: templates/monitoring/detail.html:56
+msgid "Archive monitor"
+msgstr "Архивировать мониторинг"
+
+#: templates/monitoring/export.html:3
+msgid "Export history — PriceWatch"
+msgstr "Экспорт истории — PriceWatch"
+
+#: templates/monitoring/export.html:6 templates/monitoring/form.html:6
+msgid "Back to product"
+msgstr "К товару"
+
+#: templates/monitoring/export.html:6 templates/monitoring/form.html:6
+#: templates/notifications/list.html:17
+msgid "Back to monitors"
+msgstr "К мониторингам"
+
+#: templates/monitoring/export.html:7 templates/monitoring/list.html:9
+msgid "Export history"
+msgstr "Экспорт истории"
+
+#: templates/monitoring/export.html:7
+msgid "All your monitors, including archived ones"
+msgstr "Все ваши мониторинги, включая архивные"
+
+#: templates/monitoring/export.html:9
+msgid "Export options"
+msgstr "Параметры выгрузки"
+
+#: templates/monitoring/export.html:17
+msgid ""
+"Dates are inclusive in the application timezone and narrow the period. "
+"Choose “All time” for a custom date range."
+msgstr ""
+"Даты включительно, в часовом поясе приложения; они уточняют период. Для "
+"произвольного диапазона выберите «Всё время»."
+
+#: templates/monitoring/export.html:18
+#, python-format
+msgid ""
+"Up to %(v0)s observations per export, regardless of table pagination or "
+"chart sampling. Failed checks are excluded; missing prices remain empty. "
+"Each row retains its own currency."
+msgstr ""
+"До %(v0)s наблюдений за выгрузку, без ограничения страницей таблицы или "
+"выборкой графика. Ошибочные проверки не включаются; отсутствие цены остаётся "
+"пустой ячейкой. Разные валюты сохраняются отдельно в каждой строке."
+
+#: templates/monitoring/export.html:19
+msgid ""
+"CSV: UTF-8, semicolon delimiter. When importing into Excel, select UTF-8 and "
+"use text columns for exact prices. XLSX: ordinary prices are numbers; values "
+"exceeding 15 significant digits are stored as text. Price exact always "
+"contains the exact price as text. The timezone is included."
+msgstr ""
+"CSV: UTF-8, разделитель «;». В Excel при импорте выберите UTF-8 и текстовый "
+"тип для точных цен. XLSX: обычные цены — числа; значения длиннее 15 значащих "
+"цифр сохраняются текстом. Столбец Price exact всегда содержит точную цену "
+"текстом. Время указано вместе с часовым поясом."
+
+#: templates/monitoring/form.html:3 templates/monitoring/form.html:7
+#: templates/monitoring/list.html:9
+msgid "Add product"
+msgstr "Добавить товар"
+
+#: templates/monitoring/form.html:7
+msgid "Monitor settings"
+msgstr "Настройки мониторинга"
+
+#: templates/monitoring/form.html:7
+msgid "New monitor"
+msgstr "Новый мониторинг"
+
+#: templates/monitoring/form.html:7
+msgid "Edit product"
+msgstr "Редактировать товар"
+
+#: templates/monitoring/form.html:7
+msgid "Save the settings first. You can start a check from the product page."
+msgstr ""
+"Сначала сохраните настройки. Проверку можно запустить со страницы товара."
+
+#: templates/monitoring/form.html:13
+msgid "Allowed sites:"
+msgstr "Разрешённые сайты:"
+
+#: templates/monitoring/form.html:13
+#, python-format
+msgid "%(v0)s. Subdomains must be allowed separately."
+msgstr "%(v0)s. Поддомены разрешаются отдельно."
+
+#: templates/monitoring/form.html:13
+msgid "The site allowlist is not configured yet."
+msgstr "Список сайтов пока не настроен."
+
+#: templates/monitoring/form.html:13
+msgid ""
+"The administrator must configure allowed domains before network checks can "
+"run."
+msgstr "Для сетевых проверок администратор должен указать разрешённые домены."
+
+#: templates/monitoring/form.html:17
+msgid ""
+"The threshold applies only when crossed: previous price ≥ threshold, new "
+"price &lt; threshold, in the same currency. The first price and currency/URL "
+"changes do not create notifications. Notifications are off by default."
+msgstr ""
+"Порог используется только в режиме пересечения: предыдущая цена ≥ порога, "
+"новая &lt; порога, валюта совпадает. Первое получение цены и смена валюты/"
+"URL не создают уведомление. По умолчанию уведомления выключены."
+
+#: templates/monitoring/form.html:18
+msgid "In-app notifications are available in your workspace."
+msgstr "Внутренние уведомления доступны в кабинете."
+
+#: templates/monitoring/form.html:18
+msgid "Email is configured separately for your account"
+msgstr "Email настраивается отдельно для аккаунта"
+
+#: templates/monitoring/form.html:21
+msgid "Extraction settings"
+msgstr "Настройки извлечения"
+
+#: templates/monitoring/form.html:21
+msgid "CSS selectors and currency"
+msgstr "CSS-селекторы и валюта"
+
+#: templates/monitoring/form.html:22
+msgid ""
+"Leave fields empty to use JSON-LD and metadata. A selector must match one "
+"element. For a manually selected price, the currency comes from the selected "
+"text or an explicit setting."
+msgstr ""
+"Оставьте поля пустыми для JSON-LD и метаданных. Селектор должен выбирать "
+"один элемент. При ручном выборе цены её валюта определяется из выбранного "
+"текста или явной настройки."
+
+#: templates/monitoring/form.html:35
+msgid ""
+"A queued check uses the settings captured when it was requested. Changes "
+"apply to the next check."
+msgstr ""
+"Уже поставленная в очередь проверка использует сохранённые при запуске "
+"настройки. Изменения применятся к следующей проверке."
+
+#: templates/monitoring/form.html:36
+msgid "Save changes"
+msgstr "Сохранить изменения"
+
+#: templates/monitoring/form.html:36
+msgid "Create monitor"
+msgstr "Создать мониторинг"
+
+#: templates/monitoring/list.html:4
+msgid "My monitors — PriceWatch"
+msgstr "Мои мониторинги — PriceWatch"
+
+#: templates/monitoring/list.html:8
+msgid "Check products and keep their price history."
+msgstr "Проверяйте товары и сохраняйте историю цен."
+
+#: templates/monitoring/list.html:11
+msgid "Monitor status"
+msgstr "Состояние мониторингов"
+
+#: templates/monitoring/list.html:12
+msgid "Active"
+msgstr "Активные"
+
+#: templates/monitoring/list.html:16
+msgid "Product list"
+msgstr "Список товаров"
+
+#: templates/monitoring/list.html:20
+msgid "Select"
+msgstr "Выбор"
+
+#: templates/monitoring/list.html:20
+msgid "Product"
+msgstr "Товар"
+
+#: templates/monitoring/list.html:20
+msgid "Schedule"
+msgstr "Расписание"
+
+#: templates/monitoring/list.html:22
+#, python-format
+msgid "Compare %(v0)s"
+msgstr "Сравнить %(v0)s"
+
+#: templates/monitoring/list.html:23
+#, python-format
+msgid "Added %(v0)s"
+msgstr "Добавлен %(v0)s"
+
+#: templates/monitoring/list.html:26
+#, python-format
+msgid "Next %(v0)s"
+msgstr "Далее %(v0)s"
+
+#: templates/monitoring/list.html:26
+msgid "Disabled"
+msgstr "Выключено"
+
+#: templates/monitoring/list.html:32
+msgid "Your history stays available"
+msgstr "История остаётся с вами"
+
+#: templates/monitoring/list.html:32
+msgid "First observation"
+msgstr "Первое наблюдение"
+
+#: templates/monitoring/list.html:33
+msgid "The archive is empty"
+msgstr "В архиве пока пусто"
+
+#: templates/monitoring/list.html:33
+msgid "Add your first product"
+msgstr "Добавьте первый товар"
+
+#: templates/monitoring/list.html:34
+msgid ""
+"Archived monitors retain their results and remain available for viewing."
+msgstr "Архивные мониторинги сохраняют результаты и доступны для просмотра."
+
+#: templates/monitoring/list.html:34
+msgid ""
+"Save a product link from a supported site, then enable a schedule or start a "
+"check manually."
+msgstr ""
+"Сохраните ссылку на товар поддерживаемого сайта, затем включите расписание "
+"или запустите проверку вручную."
+
+#: templates/monitoring/list.html:37
+msgid "Compare selected"
+msgstr "Сравнить выбранные"
+
+#: templates/monitoring/list.html:37
+msgid "Select 2–5 products on this page. Prices must use the same currency."
+msgstr ""
+"Выберите 2–5 товаров на этой странице. Сравниваются цены в одной валюте."
+
+#: templates/monitoring/list.html:40
+msgid ""
+"The price comes from the last successful check. Loading errors do not remove "
+"previous data."
+msgstr ""
+"Цена относится к последней успешной проверке. Ошибки загрузки не удаляют "
+"предыдущие данные."
+
+#: templates/notifications/email.txt:1
+msgid "PriceWatch — price change"
+msgstr "PriceWatch — изменение цены"
+
+#: templates/notifications/email.txt:4
+msgid "Previous price:"
+msgstr "Старая цена:"
+
+#: templates/notifications/email.txt:5
+msgid "New price:"
+msgstr "Новая цена:"
+
+#: templates/notifications/email.txt:6
+msgid "Change:"
+msgstr "Изменение:"
+
+#: templates/notifications/email.txt:7
+msgid "Percentage:"
+msgstr "Процент:"
+
+#: templates/notifications/email.txt:7
+msgid "undefined — the initial price is zero"
+msgstr "не определён — начальная цена равна нулю"
+
+#: templates/notifications/email.txt:8
+msgid "Date:"
+msgstr "Дата:"
+
+#: templates/notifications/email.txt:10
+msgid "Open monitor:"
+msgstr "Открыть мониторинг:"
+
+#: templates/notifications/email.txt:12
+msgid ""
+"You received this message because you enabled PriceWatch email notifications."
+msgstr ""
+"Вы получили это сообщение, потому что включили email-уведомления в "
+"PriceWatch."
+
+#: templates/notifications/email.txt:13
+msgid "Email preferences are available in your workspace under Notifications."
+msgstr "Настройки email доступны в разделе «Уведомления» вашего кабинета."
+
+#: templates/notifications/list.html:4
+msgid "Notifications — PriceWatch"
+msgstr "Уведомления — PriceWatch"
+
+#: templates/notifications/list.html:7
+msgid "Price changes"
+msgstr "Изменения цен"
+
+#: templates/notifications/list.html:7
+msgid "Only confirmed changes matching your rules."
+msgstr "Только подтверждённые изменения по вашим правилам."
+
+#: templates/notifications/list.html:7
+msgid "Email preferences"
+msgstr "Настройки email"
+
+#: templates/notifications/list.html:8
+msgid "Notification filter"
+msgstr "Фильтр уведомлений"
+
+#: templates/notifications/list.html:8
+msgid "All"
+msgstr "Все"
+
+#: templates/notifications/list.html:8
+msgid "Unread"
+msgstr "Непрочитанные"
+
+#: templates/notifications/list.html:8
+msgid "Mark all as read"
+msgstr "Прочитать все"
+
+#: templates/notifications/list.html:9
+msgid "Notification list"
+msgstr "Список уведомлений"
+
+#: templates/notifications/list.html:11
+msgid "Read"
+msgstr "Прочитано"
+
+#: templates/notifications/list.html:11
+msgid "New"
+msgstr "Новое"
+
+#: templates/notifications/list.html:13
+msgid "percentage is undefined: the initial price is 0"
+msgstr "процент не определён: начальная цена 0"
+
+#: templates/notifications/list.html:14
+msgid "Threshold crossing"
+msgstr "Пересечение порога"
+
+#: templates/notifications/list.html:14
+msgid "Price decrease"
+msgstr "Снижение цены"
+
+#: templates/notifications/list.html:14
+msgid "Price change"
+msgstr "Изменение цены"
+
+#: templates/notifications/list.html:14
+msgid "Passed to the mail system (delivery not confirmed)"
+msgstr "Передано почтовой системе (доставка не подтверждена)"
+
+#: templates/notifications/list.html:15
+#, python-format
+msgid ""
+"%(v0)s. The in-app notification is saved. Email is not retried automatically "
+"to avoid duplicates."
+msgstr ""
+"%(v0)s. Внутреннее уведомление сохранено. Автоматический повтор письма не "
+"выполняется, чтобы исключить дубликат."
+
+#: templates/notifications/list.html:16
+msgid "Mark as read"
+msgstr "Отметить прочитанным"
+
+#: templates/notifications/list.html:17
+msgid "No unread notifications"
+msgstr "Непрочитанных уведомлений нет"
+
+#: templates/notifications/list.html:17
+msgid "No notifications yet"
+msgstr "Уведомлений пока нет"
+
+#: templates/notifications/list.html:17
+msgid ""
+"Configure a rule in the monitor settings. The first price establishes a "
+"baseline; notifications appear on subsequent matching changes."
+msgstr ""
+"Настройте правило в карточке мониторинга. Первое получение цены задаёт "
+"базовую точку; уведомления появятся при следующих подходящих изменениях."
+
+#: templates/notifications/list.html:19
+msgid "Notification pages"
+msgstr "Страницы уведомлений"
+
+#: templates/notifications/settings.html:3
+msgid "Email preferences — PriceWatch"
+msgstr "Настройки email — PriceWatch"
+
+#: templates/notifications/settings.html:5
+msgid "← Back to notifications"
+msgstr "← К уведомлениям"
+
+#: templates/notifications/settings.html:5
+msgid "Personal preferences"
+msgstr "Личные настройки"
+
+#: templates/notifications/settings.html:5
+msgid "This preference applies to all your monitors."
+msgstr "Этот переключатель действует для всех ваших мониторингов."
+
+#: templates/notifications/settings.html:9
+msgid ""
+"A monitor rule must be enabled and a new matching price change must occur. "
+"Enabling email does not send previous notifications. A send already in "
+"progress cannot be stopped."
+msgstr ""
+"Нужны включённое правило мониторинга и новое подходящее изменение цены. "
+"Старые уведомления при включении не рассылаются. Уже начатую отправку "
+"остановить нельзя."
+
+#: templates/notifications/settings.html:10
+msgid "Save preferences"
+msgstr "Сохранить настройки"
+
+#: templates/registration/login.html:4
+msgid "Sign in — PriceWatch"
+msgstr "Вход — PriceWatch"
+
+#: templates/registration/login.html:10
+msgid "Your workspace"
+msgstr "Ваш рабочий кабинет"
+
+#: templates/registration/login.html:11
+msgid "Every price"
+msgstr "У каждой цены"
+
+#: templates/registration/login.html:11
+msgid "has a history."
+msgstr "есть история."
+
+#: templates/registration/login.html:12
+msgid "PriceWatch tracks prices and changes on websites."
+msgstr ""
+"PriceWatch — пространство для наблюдения за ценами и изменениями на сайтах."
+
+#: templates/registration/login.html:21
+msgid "Access for your team"
+msgstr "Доступ для вашей команды"
+
+#: templates/registration/login.html:22
+msgid "Accounts are created by the project administrator."
+msgstr "Учётные записи создаёт администратор проекта."
+
+#: templates/registration/login.html:29
+msgid "Welcome back"
+msgstr "С возвращением"
+
+#: templates/registration/login.html:30
+msgid "Sign in to PriceWatch"
+msgstr "Войти в PriceWatch"
+
+#: templates/registration/login.html:31
+msgid "Use your existing account."
+msgstr "Используйте свою учётную запись."
+
+#: templates/registration/login.html:36
+msgid "Could not sign in. Check your username and password."
+msgstr "Не удалось войти. Проверьте имя пользователя и пароль."
+
+#: templates/registration/login.html:44
+msgid "Username"
+msgstr "Имя пользователя"
+
+#: templates/registration/login.html:46
+msgid "The username provided by your administrator."
+msgstr "Имя, выданное администратором."
+
+#: templates/registration/login.html:54
+msgid "Password"
+msgstr "Пароль"
+
+#: templates/registration/login.html:62
+msgid "Sign in"
+msgstr "Войти в кабинет"
+
+#: templates/registration/login.html:64
+msgid "Cannot sign in or forgot your password?"
+msgstr "Нет доступа или забыли пароль?"
+
+#: templates/registration/login.html:64
+msgid "Contact the project administrator."
+msgstr "Обратитесь к администратору проекта."

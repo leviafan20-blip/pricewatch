@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_noop
 """Bounded robots rules with longest-match precedence and a process-local TTL cache."""
 
 from collections import OrderedDict
@@ -51,7 +52,7 @@ class RobotsRules:
 
 def parse_robots(text, user_agent="PriceWatchBot"):
     if len(text.encode("utf-8")) > 512 * 1024:
-        raise ScrapingError("robots_unavailable", "Файл robots.txt слишком большой.")
+        raise ScrapingError("robots_unavailable", gettext_noop("Файл robots.txt слишком большой."))
     groups, agents, rules, delay = [], [], [], 0.0
     has_directives = False
     for line in text.lstrip("\ufeff").splitlines():
@@ -70,17 +71,17 @@ def parse_robots(text, user_agent="PriceWatchBot"):
             has_directives = True
             if key in {"allow", "disallow"} and value:
                 if len(value) > 2048 or len(rules) >= 2048:
-                    raise ScrapingError("robots_unavailable", "Слишком сложные правила robots.txt.")
+                    raise ScrapingError("robots_unavailable", gettext_noop("Слишком сложные правила robots.txt."))
                 if not value.startswith("/"):
-                    raise ScrapingError("robots_unavailable", "Некорректные правила robots.txt.")
+                    raise ScrapingError("robots_unavailable", gettext_noop("Некорректные правила robots.txt."))
                 rules.append((key == "allow", _octets(value)))
             elif key == "crawl-delay":
                 try:
                     parsed_delay = float(value)
                 except ValueError:
-                    raise ScrapingError("robots_unavailable", "Некорректный Crawl-delay.") from None
+                    raise ScrapingError("robots_unavailable", gettext_noop("Некорректный Crawl-delay.")) from None
                 if not math.isfinite(parsed_delay) or not 0 <= parsed_delay <= 86400:
-                    raise ScrapingError("robots_unavailable", "Некорректный Crawl-delay.")
+                    raise ScrapingError("robots_unavailable", gettext_noop("Некорректный Crawl-delay."))
                 delay = max(delay, parsed_delay)
     if agents:
         groups.append((agents, rules, delay))

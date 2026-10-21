@@ -55,8 +55,8 @@ def test_archived_monitor_cannot_enable_schedule(client, user, monitor):
     client.force_login(user)
     assert client.post(reverse("monitoring:schedule", args=[monitor.pk]), {"auto_enabled": "on", "check_interval_hours": "1"}).status_code == 404
     content = client.get(reverse("monitoring:detail", args=[monitor.pk])).content.decode()
-    assert "Следующая плановая проверка" in content and "Не запланирована" in content
-    assert "Сохранить расписание" not in content
+    assert "Next scheduled check" in content and "Not scheduled" in content
+    assert "Save schedule" not in content
 
 
 def test_readonly_schedule_fields_cannot_be_forged(client, user, monitor):
@@ -77,9 +77,12 @@ def test_schedule_times_are_rendered_in_user_timezone(client, user, monitor):
     client.force_login(user)
     with timezone.override("Asia/Yekaterinburg"):
         content = client.get(reverse("monitoring:detail", args=[monitor.pk])).content.decode()
-    assert "20.10.2026 15:00:00" in content
+    from django.utils.formats import date_format
+    from django.utils import translation
+    with translation.override("en"), timezone.override("Asia/Yekaterinburg"):
+        assert date_format(timezone.localtime(utc_time), "DATETIME_FORMAT") in content
+        assert date_format(utc_time, "DATETIME_FORMAT") not in content
     assert "Asia/Yekaterinburg" in content
-    assert "20.10.2026 10:00:00" not in content
 
 
 def test_form_offers_only_supported_intervals(monitor):

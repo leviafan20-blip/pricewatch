@@ -37,12 +37,22 @@ jobs:
           cache: pip
           cache-dependency-path: requirements/*.txt
       - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gettext
+          python -m pip install -r requirements/dev.txt
+      - name: Compile translations
+        run: python manage.py compilemessages
       - name: Check Django configuration and migrations
         run: |
           python manage.py check
           python manage.py makemigrations --check --dry-run
       - name: Run tests on PostgreSQL
         run: python -m pytest --cov=apps --cov-report=term-missing
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check chart localization
+        run: node --test tests/js/price-history.test.cjs
       - name: Check static assets
         run: python manage.py collectstatic --noinput

@@ -4,6 +4,7 @@ from datetime import timedelta
 import logging
 
 from django.conf import settings
+from django.utils.translation import gettext
 from django.core.mail import EmailMessage
 from django.core.validators import validate_email
 from django.db import transaction
@@ -93,7 +94,7 @@ def send_notification_email(notification_id):
         validate_email(owner.email)
         link = settings.PRICEWATCH_BASE_URL.rstrip("/") + reverse("monitoring:detail", args=[monitor.pk])
         message = EmailMessage(
-            subject=f"PriceWatch: изменение цены — {' '.join(monitor.name.split())[:200]}",
+            subject=gettext("PriceWatch: price change — %(name)s") % {"name": ' '.join(monitor.name.split())[:200]},
             body=render_to_string("notifications/email.txt", {"notice": notice, "monitor": monitor, "link": link}),
             from_email=settings.DEFAULT_FROM_EMAIL, to=[owner.email],
             headers={"Message-ID": f"<pricewatch-notification-{notice.pk}-{notice.observation.check_run_id}@pricewatch.local>"},

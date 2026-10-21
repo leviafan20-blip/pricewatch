@@ -1,8 +1,9 @@
+{% load i18n %}
 {% load monitoring %}
 {% if history_page.has_other_pages %}
 <nav class="monitor-pagination" aria-label="{{ page_label }}">
-  {% if history_page.has_previous %}<a class="btn btn-outline-secondary" href="{% history_query page_parameter history_page.previous_page_number %}">Назад</a>{% endif %}
-  <span>Страница {{ history_page.number }} из {{ history_page.paginator.num_pages }}</span>
-  {% if history_page.has_next %}<a class="btn btn-outline-secondary" href="{% history_query page_parameter history_page.next_page_number %}">Далее</a>{% endif %}
+  {% if history_page.has_previous %}<a class="btn btn-outline-secondary" href="{% history_query page_parameter history_page.previous_page_number %}">{% translate "Previous" %}</a>{% endif %}
+  <span>{% blocktranslate with v0=history_page.number v1=history_page.paginator.num_pages %}Page {{ v0 }} of {{ v1 }}{% endblocktranslate %}</span>
+  {% if history_page.has_next %}<a class="btn btn-outline-secondary" href="{% history_query page_parameter history_page.next_page_number %}">{% translate "Next" %}</a>{% endif %}
 </nav>
 {% endif %}

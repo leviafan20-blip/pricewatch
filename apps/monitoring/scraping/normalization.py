@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_noop
 """Conservative parsing: ambiguity produces an error, never a guessed price."""
 
 import re
@@ -46,23 +47,23 @@ def normalize_currency(value: str, hint: str | None = None) -> str:
         if resolved_hint in _AMBIGUOUS_SYMBOLS[token]:
             return resolved_hint
         if resolved_hint:
-            raise ScrapingError("currency_mismatch", "Символ цены не соответствует валюте.")
-        raise ScrapingError("ambiguous_currency", "Неоднозначный символ валюты: укажите её код.")
-    raise ScrapingError("unsupported_currency", "Валюта не поддерживается или указана неверно.")
+            raise ScrapingError("currency_mismatch", gettext_noop("Символ цены не соответствует валюте."))
+        raise ScrapingError("ambiguous_currency", gettext_noop("Неоднозначный символ валюты: укажите её код."))
+    raise ScrapingError("unsupported_currency", gettext_noop("Валюта не поддерживается или указана неверно."))
 
 
 def _positive_decimal(number: str) -> Decimal:
     try:
         value = Decimal(number)
     except InvalidOperation as exc:
-        raise ScrapingError("invalid_price", "Цена имеет неверный формат.") from exc
+        raise ScrapingError("invalid_price", gettext_noop("Цена имеет неверный формат.")) from exc
     if (
         not value.is_finite() or value < 0
         or len(value.as_tuple().digits) > 18 or value.adjusted() >= 18
     ):
-        raise ScrapingError("invalid_price", "Цена должна быть конечным неотрицательным числом.")
+        raise ScrapingError("invalid_price", gettext_noop("Цена должна быть конечным неотрицательным числом."))
     if value.as_tuple().exponent < -4:
-        raise ScrapingError("invalid_price", "Цена содержит более четырёх десятичных знаков.")
+        raise ScrapingError("invalid_price", gettext_noop("Цена содержит более четырёх десятичных знаков."))
     return value
 
 
@@ -71,13 +72,13 @@ def _normalize_number(raw: str, *, machine_format: bool) -> Decimal:
     if machine_format and re.fullmatch(r"[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?", number):
         return _positive_decimal(number)
     if not re.fullmatch(r"[0-9][0-9 ,.']*", number):
-        raise ScrapingError("invalid_price", "Цена содержит диапазон или посторонний текст.")
+        raise ScrapingError("invalid_price", gettext_noop("Цена содержит диапазон или посторонний текст."))
 
     # Spaces and apostrophes can only be complete groups of three integer digits.
     if " " in number or "'" in number:
         grouped = re.fullmatch(r"([0-9]{1,3})([ '])([0-9]{3}(?:\2[0-9]{3})*)([.,][0-9]{1,4})?", number)
         if not grouped:
-            raise ScrapingError("invalid_price", "Неверное разделение разрядов цены.")
+            raise ScrapingError("invalid_price", gettext_noop("Неверное разделение разрядов цены."))
         number = number.replace(" ", "").replace("'", "")
         if grouped.group(4):
             number = number.replace(",", ".")
@@ -88,9 +89,9 @@ def _normalize_number(raw: str, *, machine_format: bool) -> Decimal:
         thousands_separator = "," if decimal_separator == "." else "."
         integer, fraction = number.rsplit(decimal_separator, 1)
         if not re.fullmatch(r"[0-9]{1,3}(?:" + re.escape(thousands_separator) + r"[0-9]{3})+", integer):
-            raise ScrapingError("invalid_price", "Неверное разделение разрядов цены.")
+            raise ScrapingError("invalid_price", gettext_noop("Неверное разделение разрядов цены."))
         if not re.fullmatch(r"[0-9]{1,4}", fraction):
-            raise ScrapingError("invalid_price", "Неверная дробная часть цены.")
+            raise ScrapingError("invalid_price", gettext_noop("Неверная дробная часть цены."))
         return _positive_decimal(integer.replace(thousands_separator, "") + "." + fraction)
 
     separator = "." if "." in number else "," if "," in number else None
@@ -98,12 +99,12 @@ def _normalize_number(raw: str, *, machine_format: bool) -> Decimal:
         parts = number.split(separator)
         if len(parts) > 2:
             if not re.fullmatch(r"[0-9]{1,3}(?:" + re.escape(separator) + r"[0-9]{3})+", number):
-                raise ScrapingError("invalid_price", "Неверный формат цены.")
+                raise ScrapingError("invalid_price", gettext_noop("Неверный формат цены."))
             number = "".join(parts)
         elif len(parts[1]) == 3:
-            raise ScrapingError("ambiguous_price", "Разделитель цены неоднозначен; используйте явный формат.")
+            raise ScrapingError("ambiguous_price", gettext_noop("Разделитель цены неоднозначен; используйте явный формат."))
         elif not 1 <= len(parts[1]) <= 4:
-            raise ScrapingError("invalid_price", "Неверная дробная часть цены.")
+            raise ScrapingError("invalid_price", gettext_noop("Неверная дробная часть цены."))
         else:
             number = ".".join(parts)
     return _positive_decimal(number)
@@ -121,31 +122,31 @@ def normalize_price(
     Missing currency is checked by the extractor after combining explicit fields.
     """
     if isinstance(value, bool) or not isinstance(value, (str, int, Decimal)):
-        raise ScrapingError("invalid_price", "Цена должна быть числом или строкой с числом.")
+        raise ScrapingError("invalid_price", gettext_noop("Цена должна быть числом или строкой с числом."))
     raw = normalize_text(str(value))
     if not raw:
-        raise ScrapingError("missing_price", "Цена отсутствует или выбранный элемент пуст.")
+        raise ScrapingError("missing_price", gettext_noop("Цена отсутствует или выбранный элемент пуст."))
     if len(raw) > 200:
-        raise ScrapingError("invalid_price", "Строка цены слишком длинная.")
+        raise ScrapingError("invalid_price", gettext_noop("Строка цены слишком длинная."))
     hint = normalize_currency(currency_hint) if currency_hint else None
     matches = list(_TOKEN_RE.finditer(raw))
     for match in matches:
         if re.search(r"[0-9]", raw[:match.start()]) and re.search(r"[0-9]", raw[match.end():]):
             # Removing a currency between two amounts would concatenate prices:
             # "100 ₽ 200 ₽" must not become the plausible amount "100 200".
-            raise ScrapingError("ambiguous_price", "Выбранный элемент содержит несколько цен.")
+            raise ScrapingError("ambiguous_price", gettext_noop("Выбранный элемент содержит несколько цен."))
     tokens = [match.group() for match in matches]
     explicit = {
         normalize_currency(token) for token in tokens
         if token.casefold() not in _AMBIGUOUS_SYMBOLS
     }
     if len(explicit) > 1 or (hint and explicit and explicit != {hint}):
-        raise ScrapingError("currency_mismatch", "В цене и настройках указаны разные валюты.")
+        raise ScrapingError("currency_mismatch", gettext_noop("В цене и настройках указаны разные валюты."))
     currency = next(iter(explicit), hint)
     for token in tokens:
         resolved = normalize_currency(token, currency)
         if currency and resolved != currency:
-            raise ScrapingError("currency_mismatch", "В цене указаны разные валюты.")
+            raise ScrapingError("currency_mismatch", gettext_noop("В цене указаны разные валюты."))
         currency = resolved
     numeric = _TOKEN_RE.sub("", raw).strip()
     return _normalize_number(numeric, machine_format=machine_format), currency

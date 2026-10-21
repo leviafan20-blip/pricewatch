@@ -212,8 +212,8 @@ def test_owner_isolation_and_anonymous_access(client, monitor, django_user_model
     assert client.get(url, {"monitor": [99999999, own.pk]}).status_code == 404
 
 
-@pytest.mark.parametrize("prices,message", [([], "За этот период цен пока нет"), (["5"], "Единственное наблюдение"),
-                                             (["5", "5"], "Цена не менялась"), (["5", "4", "5"], "внутри периода были изменения")])
+@pytest.mark.parametrize("prices,message", [([], "No prices for this period yet"), (["5"], "Only one observation"),
+                                             (["5", "5"], "The price did not change"), (["5", "4", "5"], "there were changes within the period")])
 def test_readable_states_and_safe_chart_json(owner_client, monitor, prices, message):
     monitor.name = '</script><script>alert("XSS")</script>'
     monitor.save()
@@ -255,14 +255,14 @@ def test_large_history_bounded_with_endpoints_extrema_and_exact_stats(owner_clie
     response = owner_client.get(reverse("monitoring:detail", args=[monitor.pk]), {"period": "all"})
     assert len(response.context["observation_page"]) == 20
     assert len(chart_json(response)["series"][0]["points"]) <= 400
-    assert "Показана выборка" in response.content.decode()
+    assert "Showing up to 400 sampled points" in response.content.decode()
 
 
-@pytest.mark.parametrize("value,expected", [(Decimal("-123"), "-123"), (Decimal("-1234.5678"), "-1\N{NO-BREAK SPACE}234,5678"), ("", "—")])
+@pytest.mark.parametrize("value,expected", [(Decimal("-123"), "-123"), (Decimal("-1234.5678"), "-1,234.5678"), ("", "—")])
 def test_signed_exact_amounts(value, expected):
     assert amount(value) == expected
 
 
 def test_decimal_display_rounds_only_at_output():
-    assert percent_amount(Decimal("-33.333333")) == "-33,33"
+    assert percent_amount(Decimal("-33.333333")) == "-33.33"
     assert percent_amount(None) == "—"

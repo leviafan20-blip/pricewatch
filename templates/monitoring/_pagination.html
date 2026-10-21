@@ -1,7 +1,8 @@
+{% load i18n %}
 {% if page_obj.has_other_pages %}
-  <nav class="monitor-pagination" aria-label="Страницы истории">
-    {% if page_obj.has_previous %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.previous_page_number }}{% if archived %}&amp;state=archived{% endif %}">Назад</a>{% endif %}
-    <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.next_page_number }}{% if archived %}&amp;state=archived{% endif %}">Далее</a>{% endif %}
+  <nav class="monitor-pagination" aria-label='{% translate "History pages" %}'>
+    {% if page_obj.has_previous %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.previous_page_number }}{% if archived %}&amp;state=archived{% endif %}">{% translate "Previous" %}</a>{% endif %}
+    <span>{% blocktranslate with v0=page_obj.number v1=page_obj.paginator.num_pages %}Page {{ v0 }} of {{ v1 }}{% endblocktranslate %}</span>
+    {% if page_obj.has_next %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.next_page_number }}{% if archived %}&amp;state=archived{% endif %}">{% translate "Next" %}</a>{% endif %}
   </nav>
 {% endif %}

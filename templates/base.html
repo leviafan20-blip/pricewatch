@@ -1,6 +1,8 @@
+{% load i18n %}
 {% load static %}
 <!doctype html>
-<html lang="ru">
+{% get_current_language as current_language %}
+<html lang="{{ current_language }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,10 +14,10 @@
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
   </head>
   <body class="{% block body_class %}{% endblock %}">
-    <a class="skip-link" href="#main-content">Перейти к содержимому</a>
+    <a class="skip-link" href="#main-content">{% translate "Skip to content" %}</a>
     <header class="site-header">
       <div class="container page-container header-inner">
-        <a class="brand" href="{% url 'core:dashboard' %}" aria-label="PriceWatch — главная">
+        <a class="brand" href="{% url 'core:dashboard' %}" aria-label='{% translate "PriceWatch home" %}'>
           <span class="brand-mark" aria-hidden="true">
             <svg width="25" height="25" viewBox="0 0 25 25" fill="none">
               <path d="M5 6.5V18h15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -25,12 +27,20 @@
           </span>
           <span>Price<span class="brand-accent">Watch</span></span>
         </a>
+        <form method="post" action="{% url 'set_language' %}" class="language-switcher" aria-label="{% translate 'Language' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'Language' %}">
+            <button type="submit" name="language" value="ru" lang="ru" class="btn {% if current_language == 'ru' %}btn-primary{% else %}btn-outline-secondary{% endif %}" aria-pressed="{% if current_language == 'ru' %}true{% else %}false{% endif %}">RU</button>
+            <button type="submit" name="language" value="en" lang="en" class="btn {% if current_language == 'en' %}btn-primary{% else %}btn-outline-secondary{% endif %}" aria-pressed="{% if current_language == 'en' %}true{% else %}false{% endif %}">EN</button>
+          </div>
+        </form>
         {% if user.is_authenticated %}
-          <nav class="account-nav" aria-label="Аккаунт">
-            <a class="nav-text-link" href="{% url 'monitoring:list' %}">Мониторинги</a>
-            <a class="nav-text-link notification-nav" href="{% url 'notifications:list' %}">Уведомления <span class="notification-count" aria-label="Непрочитанных: {{ unread_notification_count }}">{{ unread_notification_count }}</span></a>
+          <nav class="account-nav" aria-label='{% translate "Account" %}'>
+            <a class="nav-text-link" href="{% url 'monitoring:list' %}">{% translate "Monitors" %}</a>
+            <a class="nav-text-link notification-nav" href="{% url 'notifications:list' %}">{% translate "Notifications" %} <span class="notification-count" aria-label='{% blocktranslate with v0=unread_notification_count %}Unread: {{ v0 }}{% endblocktranslate %}'>{{ unread_notification_count }}</span></a>
             {% if user.is_staff %}
-              <a class="nav-text-link" href="{% url 'admin:index' %}">Администрирование</a>
+              <a class="nav-text-link" href="{% url 'admin:index' %}">{% translate "Administration" %}</a>
             {% endif %}
             <span class="account-name" title="{{ user.get_username }}">
               <span class="account-avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
@@ -38,11 +48,11 @@
             </span>
             <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
               {% csrf_token %}
-              <button class="btn btn-outline-secondary btn-logout" type="submit">Выйти</button>
+              <button class="btn btn-outline-secondary btn-logout" type="submit">{% translate "Sign out" %}</button>
             </form>
           </nav>
         {% else %}
-          <span class="private-access"><span class="status-dot" aria-hidden="true"></span>Закрытый доступ</span>
+          <span class="private-access"><span class="status-dot" aria-hidden="true"></span>{% translate "Private access" %}</span>
         {% endif %}
       </div>
     </header>
@@ -61,7 +71,7 @@
     <footer class="site-footer">
       <div class="container page-container footer-inner">
         <span>PriceWatch</span>
-        <span>Внимание к каждой цене.</span>
+        <span>{% translate "Keep an eye on every price." %}</span>
       </div>
     </footer>
     {% block scripts %}{% endblock %}

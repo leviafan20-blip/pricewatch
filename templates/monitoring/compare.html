@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}Сравнение цен — PriceWatch{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "Price comparison — PriceWatch" %}{% endblock %}
 {% block content %}
 <div class="container page-container dashboard-layout">
-  <a class="back-link" href="{% url 'monitoring:list' %}">← К мониторингам</a>
-  <div class="dashboard-heading"><div><p class="eyebrow">Аналитика</p><h1>Сравнение товаров</h1><p class="page-description">До пяти мониторингов в одной валюте. Данные каждого товара рассчитываются независимо.</p></div></div>
+  <a class="back-link" href="{% url 'monitoring:list' %}">{% translate "← Back to monitors" %}</a>
+  <div class="dashboard-heading"><div><p class="eyebrow">{% translate "Analytics" %}</p><h1>{% translate "Product comparison" %}</h1><p class="page-description">{% translate "Up to five monitors in one currency. Each product's statistics are calculated independently." %}</p></div></div>
   {% if selection_error %}<div class="alert alert-warning" role="alert">{{ selection_error }}</div>{% else %}{% include 'monitoring/_analytics.html' %}{% endif %}
 </div>
 {% endblock %}

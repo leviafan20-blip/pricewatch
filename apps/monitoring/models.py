@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class SiteAccessState(models.Model):
@@ -18,17 +19,17 @@ class SiteAccessState(models.Model):
 
 class Monitor(models.Model):
     class NotificationMode(models.TextChoices):
-        OFF = "off", "Выключены"
-        ANY = "any", "При любом изменении цены"
-        DECREASE = "decrease", "При снижении цены"
-        THRESHOLD = "threshold", "При пересечении порога вниз"
+        OFF = "off", _("Off")
+        ANY = "any", _("On any price change")
+        DECREASE = "decrease", _("On a price decrease")
+        THRESHOLD = "threshold", _("On a downward threshold crossing")
 
     class Interval(models.IntegerChoices):
-        HOUR = 1, "Каждый час"
-        THREE_HOURS = 3, "Каждые 3 часа"
-        SIX_HOURS = 6, "Каждые 6 часов"
-        TWELVE_HOURS = 12, "Каждые 12 часов"
-        DAY = 24, "Каждые 24 часа"
+        HOUR = 1, _("Every hour")
+        THREE_HOURS = 3, _("Every 3 hours")
+        SIX_HOURS = 6, _("Every 6 hours")
+        TWELVE_HOURS = 12, _("Every 12 hours")
+        DAY = 24, _("Every 24 hours")
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="monitors")
     name = models.CharField(max_length=200)
@@ -70,11 +71,11 @@ class Monitor(models.Model):
 
 class CheckRun(models.Model):
     class Status(models.TextChoices):
-        QUEUED = "queued", "В очереди"
-        RUNNING = "running", "Выполняется"
-        SUCCEEDED = "succeeded", "Успешно"
-        FAILED = "failed", "Ошибка"
-        CANCELLED = "cancelled", "Отменена"
+        QUEUED = "queued", _("Queued")
+        RUNNING = "running", _("Running")
+        SUCCEEDED = "succeeded", _("Succeeded")
+        FAILED = "failed", _("Error")
+        CANCELLED = "cancelled", _("Cancelled")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     monitor = models.ForeignKey(Monitor, on_delete=models.PROTECT, related_name="check_runs")
@@ -116,16 +117,16 @@ class CheckRun(models.Model):
         if not self._state.adding:
             original = type(self).objects.filter(pk=self.pk).values("url_snapshot", "extraction_config_snapshot", "scheduled_for").first()
             if original and any(original[field] != getattr(self, field) for field in original):
-                raise ValidationError("Настройки уже созданной проверки изменять нельзя.")
+                raise ValidationError(_("An existing check's settings cannot be changed."))
         return super().save(*args, **kwargs)
 
 
 class Observation(models.Model):
     class Availability(models.TextChoices):
-        IN_STOCK = "in_stock", "В наличии"
-        OUT_OF_STOCK = "out_of_stock", "Нет в наличии"
-        PREORDER = "preorder", "Предзаказ"
-        UNKNOWN = "unknown", "Неизвестно"
+        IN_STOCK = "in_stock", _("In stock")
+        OUT_OF_STOCK = "out_of_stock", _("Out of stock")
+        PREORDER = "preorder", _("Preorder")
+        UNKNOWN = "unknown", _("Unknown")
 
     check_run = models.OneToOneField(CheckRun, on_delete=models.PROTECT, related_name="observation")
     title = models.CharField(max_length=1000)

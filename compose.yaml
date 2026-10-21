@@ -51,7 +51,12 @@ services:
 
   migrate:
     <<: *django
-    command: ["python", "manage.py", "migrate", "--noinput"]
+    # The checkout bind mount hides catalogs compiled into the image. Compile
+    # once here before web/worker start, rather than concurrently in each service.
+    command:
+      - sh
+      - -c
+      - python manage.py compilemessages -l en -l ru --ignore=.venv --ignore=artifacts && exec python manage.py migrate --noinput
     depends_on:
       postgres:
         condition: service_healthy

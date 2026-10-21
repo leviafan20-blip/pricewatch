@@ -12,6 +12,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.utils.translation import gettext as _
 
 from . import analytics
 from .checks import CheckQueueError, archive_monitor, create_monitor, request_check, update_monitor
@@ -65,7 +66,7 @@ def monitor_create(request):
         except ValidationError as error:
             form.add_error(None, error.messages)
         else:
-            messages.success(request, "Мониторинг создан. Теперь можно запустить первую проверку.")
+            messages.success(request, _("The monitor has been created. You can now start its first check."))
             return redirect("monitoring:detail", pk=monitor.pk)
     return render(request, "monitoring/form.html", {
         "form": form, "editing": False, "allowed_hosts": settings.SCRAPING_ALLOWED_HOSTS,
@@ -101,7 +102,7 @@ def _history_context(monitors, query, *, comparing=False):
         return context
     analyses = analytics.analyze_monitors(monitors, context["history_window"], context["currency"])
     if comparing and analyses and any(not item["statistics"]["count"] for item in analyses):
-        form.add_error(None, "Для сравнения у каждого выбранного мониторинга должна быть цена в одной валюте за выбранный период.")
+        form.add_error(None, _("Each selected monitor must have a price in the same currency during the selected period to compare them."))
         return context
     context.update(analyses=analyses,
                    chart_data=analytics.chart_payload(analyses), has_prices=any(item["statistics"]["count"] for item in analyses))
@@ -128,13 +129,13 @@ def export_history(request, pk=None):
     file_format = request.GET.get("format")
     if file_format is not None:
         if file_format not in CONTENT_TYPES:
-            form.add_error(None, "Выберите CSV или XLSX.")
+            form.add_error(None, _("Select CSV or XLSX."))
         if not form.errors:
             rows = history_rows(monitors, context["history_window"], context["currency"])
             try:
                 output = build_export(rows, file_format)
             except ExportTooLarge:
-                form.add_error(None, f"Экспорт ограничен {MAX_EXPORT_ROWS} наблюдениями. Уменьшите период или задайте даты.")
+                form.add_error(None, _("Exports are limited to %(limit)s observations. Choose a shorter period or specific dates.") % {"limit": MAX_EXPORT_ROWS})
             else:
                 scope = str(monitor.pk) if monitor else "history"
                 return FileResponse(output, as_attachment=True, filename=f"pricewatch-{scope}.{file_format}",
@@ -149,14 +150,14 @@ def monitor_compare(request):
     # Selection is drawn from a paginated owner-scoped list, not an unbounded select.
     ids = request.GET.getlist("monitor")
     if len(ids) > analytics.COMPARISON_LIMIT or any(not value.isascii() or not value.isdecimal() or len(value) > 18 for value in ids):
-        return render(request, "monitoring/compare.html", {"selection_error": "Выберите от 2 до 5 мониторингов в списке."}, status=400)
+        return render(request, "monitoring/compare.html", {"selection_error": _("Select 2 to 5 monitors from the list.")}, status=400)
     ids = list(dict.fromkeys(int(value) for value in ids))
     monitors = list(Monitor.objects.filter(owner=request.user, pk__in=ids).order_by("pk"))
     if len(monitors) != len(ids):
         raise Http404
     context = {"selected_monitors": monitors}
     if len(monitors) < 2:
-        context["selection_error"] = "Выберите от 2 до 5 мониторингов в списке."
+        context["selection_error"] = _("Select 2 to 5 monitors from the list.")
     else:
         context.update(_history_context(monitors, request.GET, comparing=True))
     return render(request, "monitoring/compare.html", context)
@@ -181,7 +182,7 @@ def monitor_schedule(request, pk):
         except ValidationError as error:
             form.add_error(None, error)
         else:
-            messages.success(request, "Расписание сохранено." if form.cleaned_data["auto_enabled"] else "Автоматический мониторинг приостановлен.")
+            messages.success(request, _("Schedule saved.") if form.cleaned_data["auto_enabled"] else _("Automatic monitoring is paused."))
             return redirect("monitoring:detail", pk=pk)
     return render(request, "monitoring/detail.html", _detail_context(monitor, schedule_form=form), status=400)
 
@@ -192,7 +193,7 @@ def monitor_schedule(request, pk):
 def monitor_edit(request, pk):
     monitor = _owned_monitor(request, pk)
     if monitor.archived_at is not None:
-        messages.warning(request, "Архивный мониторинг доступен только для просмотра.")
+        messages.warning(request, _("Archived monitors are read-only."))
         return redirect("monitoring:detail", pk=pk)
     form = MonitorForm(request.POST if request.method == "POST" else None, monitor=monitor)
     if request.method == "POST" and form.is_valid():
@@ -207,7 +208,7 @@ def monitor_edit(request, pk):
         except ValidationError as error:
             form.add_error(None, error.messages)
         else:
-            messages.success(request, "Настройки мониторинга сохранены.")
+            messages.success(request, _("Monitor settings have been saved."))
             return redirect("monitoring:detail", pk=pk)
     return render(request, "monitoring/form.html", {
         "form": form, "monitor": monitor, "editing": True, "allowed_hosts": settings.SCRAPING_ALLOWED_HOSTS,
@@ -224,7 +225,7 @@ def monitor_archive(request, pk):
             archive_monitor(pk, user=request.user)
         except Monitor.DoesNotExist:
             raise Http404 from None
-        messages.success(request, "Мониторинг архивирован. История проверок сохранена.")
+        messages.success(request, _("The monitor has been archived. Check history is preserved."))
         return redirect("monitoring:detail", pk=pk)
     return render(request, "monitoring/archive.html", {"monitor": monitor})
 
@@ -240,14 +241,14 @@ def monitor_check(request, pk):
         raise Http404 from None
     except CheckQueueError as error:
         if error.run.status == CheckRun.Status.FAILED:
-            messages.error(request, "Не удалось отправить задание в очередь. Ошибка сохранена в истории; повторите проверку позднее.")
+            messages.error(request, _("Could not send the task to the queue. The error is saved in the check log; try again later."))
         else:
-            messages.warning(request, "Связь с очередью прервана. Состояние уже принятой проверки сохранено; обновите страницу перед повторной отправкой.")
+            messages.warning(request, _("The queue connection was interrupted. The accepted check's state is preserved; refresh the page before resending."))
     except ValidationError as error:
         messages.warning(request, " ".join(error.messages))
     else:
         if result.created:
-            messages.success(request, "Проверка поставлена в очередь. Обновите страницу, чтобы увидеть результат.")
+            messages.success(request, _("The check has been queued. Refresh the page to see the result."))
         else:
-            messages.info(request, "Повторно отправлено существующее задание. Новая проверка не создана." if result.published else "Задание уже отправлено. Дождитесь результата; новая проверка не создана.")
+            messages.info(request, _("The existing task has been resent. No new check was created.") if result.published else _("The task has already been sent. Wait for the result; no new check was created."))
     return redirect("monitoring:detail", pk=pk)

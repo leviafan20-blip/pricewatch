@@ -66,7 +66,7 @@ def test_check_post_enqueues_and_reuses_existing(owner_client, monitor, monkeypa
     assert publish.call_count == 1
     assert publish.call_args.args == (str(run.pk),)
     page = owner_client.get(reverse("monitoring:detail", args=[monitor.pk]))
-    assert "Повторить отправку" in page.content.decode()
+    assert "Resend task" in page.content.decode()
 
 
 def test_queue_failure_is_visible_and_safe(owner_client, monitor, monkeypatch):
@@ -91,8 +91,8 @@ def test_detail_preserves_price_after_failure_and_unpriced_out_of_stock(owner_cl
     assert response.context["latest_price"].pk == first.observation.pk
     assert response.context["latest_observation"].availability == "out_of_stock"
     assert response.context["latest_run"].error_code == "timeout"
-    assert "1\N{NO-BREAK SPACE}299,95" in response.content.decode()
-    assert "Нет в наличии" in response.content.decode()
+    assert "1,299.95" in response.content.decode()
+    assert "Out of stock" in response.content.decode()
 
 
 def test_archive_confirmation_get_does_not_mutate(owner_client, monitor, user):
@@ -117,10 +117,10 @@ def test_archived_previous_price_does_not_offer_forbidden_check(owner_client, mo
     checks.update_monitor(monitor.pk, user=user, name=monitor.name, url="https://shop.example/changed")
     checks.archive_monitor(monitor.pk, user=user)
     content = owner_client.get(reverse("monitoring:detail", args=[monitor.pk])).content.decode()
-    assert "Цена получена для предыдущего URL." in content
-    assert "Запустите проверку нового адреса" not in content
-    assert "Последнее известное наличие" in content and "Проверено" in content
-    assert "Проверить сейчас" not in content
+    assert "This price was obtained from the previous URL." in content
+    assert "Check the new URL" not in content
+    assert "Last known availability" in content and "Checked" in content
+    assert "Check now" not in content
 
 
 @pytest.mark.parametrize("route,method", [("detail", "get"), ("edit", "get"), ("edit", "post"), ("archive", "get"), ("archive", "post"), ("check", "post")])
@@ -193,6 +193,6 @@ def test_empty_allowlist_explained_and_form_denies_url(settings):
     assert not form.is_valid() and "url" in form.errors
 
 
-@pytest.mark.parametrize("value,expected", [(None, "—"), (Decimal("0"), "0"), (Decimal("1299.9500000000"), "1\N{NO-BREAK SPACE}299,95"), (Decimal("1.2345"), "1,2345"), (Decimal("1000000"), "1\N{NO-BREAK SPACE}000\N{NO-BREAK SPACE}000")])
+@pytest.mark.parametrize("value,expected", [(None, "—"), (Decimal("0"), "0"), (Decimal("1299.9500000000"), "1,299.95"), (Decimal("1.2345"), "1.2345"), (Decimal("1000000"), "1,000,000")])
 def test_amount_preserves_decimal_precision(value, expected):
     assert amount(value) == expected

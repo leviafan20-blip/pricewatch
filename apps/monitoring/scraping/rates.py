@@ -7,6 +7,7 @@ import uuid
 
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext_noop
 
 from ..models import SiteAccessState
 from .errors import ScrapingError
@@ -23,7 +24,7 @@ class DomainRateLimiter:
             ready = max(state.next_request_at, state.lease_until or now)
             if ready > now:
                 raise ScrapingError(
-                    "rate_limited", "Ограничение частоты запросов к сайту.",
+                    "rate_limited", gettext_noop("Ограничение частоты запросов к сайту."),
                     details={"retry_after_seconds": max(0.01, (ready - now).total_seconds())},
                 )
             state.lease_until = now + timedelta(seconds=lease_seconds)

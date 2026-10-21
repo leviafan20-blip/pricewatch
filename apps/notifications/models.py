@@ -4,19 +4,20 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from apps.monitoring.money import price_change
 
 
 class Notification(models.Model):
     class EmailStatus(models.TextChoices):
-        OFF = "off", "Не запрошено"
-        PENDING = "pending", "Ожидает отправки"
-        SENDING = "sending", "Отправляется"
-        SENT = "sent", "Передано почтовому backend"
-        FAILED = "failed", "Ошибка отправки"
-        UNKNOWN = "unknown", "Результат отправки неизвестен"
-        CANCELLED = "cancelled", "Отправка отменена"
+        OFF = "off", _("Not requested")
+        PENDING = "pending", _("Waiting to send")
+        SENDING = "sending", _("Sending")
+        SENT = "sent", _("Accepted by the email backend")
+        FAILED = "failed", _("Sending failed")
+        UNKNOWN = "unknown", _("Sending result unknown")
+        CANCELLED = "cancelled", _("Sending cancelled")
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="price_notifications")
     observation = models.OneToOneField("monitoring.Observation", on_delete=models.PROTECT, related_name="price_notification")

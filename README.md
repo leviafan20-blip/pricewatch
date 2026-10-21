@@ -29,6 +29,9 @@ configured for a public production deployment.
   or XLSX, including archived monitors. Exports include all matching rows, not
   just the current page or chart sample, up to 50,000 observations per download.
 - Manage users through Django Admin. There is no public registration.
+- Switch between English and Russian without signing out. English is the default;
+  your choice is saved in a browser cookie. Product names and other user data
+  keep their original language.
 
 ## Tech Stack
 
@@ -86,10 +89,15 @@ docker compose up --build -d
 docker compose ps -a
 ```
 
-Compose starts PostgreSQL and Redis, applies Django migrations through the
+Compose starts PostgreSQL and Redis, compiles the English/Russian catalogs and applies Django migrations through the
 one-off `migrate` service, then starts the web application, Celery worker, and
 Celery Beat. `migrate` exiting with code `0` is expected. Wait for the long-running
 services to report healthy before opening the application.
+
+The RU/EN switch is available on the login page and in the application header.
+English is used until you explicitly choose a language; the selection is saved
+for one year in that browser. See [localization](docs/components/localization.md)
+for translation maintenance and the stable export/email language conventions.
 
 PostgreSQL, Redis, and Beat state use named Docker volumes. Database and Redis
 ports are not exposed to the host; the web service binds to `127.0.0.1` only.

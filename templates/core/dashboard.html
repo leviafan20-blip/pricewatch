@@ -1,21 +1,22 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Личный кабинет — PriceWatch{% endblock %}
+{% block title %}{% translate "Dashboard — PriceWatch" %}{% endblock %}
 
 {% block content %}
   <div class="container page-container dashboard-layout">
     <div class="dashboard-heading">
       <div>
-        <p class="eyebrow">Личный кабинет</p>
-        <h1>Добро пожаловать{% if user.first_name %}, {{ user.first_name }}{% endif %}.</h1>
-        <p class="page-description">Добавляйте товары и проверяйте цены в удобное время.</p>
+        <p class="eyebrow">{% translate "Dashboard" %}</p>
+        <h1>{% translate "Welcome" %}{% if user.first_name %}, {{ user.first_name }}{% endif %}.</h1>
+        <p class="page-description">{% translate "Add products and check their prices when you need to." %}</p>
       </div>
-      <span class="account-status"><span class="status-dot" aria-hidden="true"></span>Аккаунт подключён</span>
+      <span class="account-status"><span class="status-dot" aria-hidden="true"></span>{% translate "Account connected" %}</span>
     </div>
 
     <section class="workspace-card" aria-labelledby="workspace-title">
       <div class="workspace-card-header">
-        <h2 id="workspace-title">Рабочее пространство</h2>
+        <h2 id="workspace-title">{% translate "Workspace" %}</h2>
         <span class="section-caption">PriceWatch</span>
       </div>
       <div class="workspace-empty">
@@ -28,19 +29,30 @@
             <path d="m25 51 10-9 10 6 17-12M56 36h6v6M35 72h18M44 64v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <p class="empty-kicker">Начало работы</p>
-        <h3>Всё начинается с первого наблюдения</h3>
-        <p class="empty-description">Сохраните URL товара, запустите проверку и просматривайте результаты. История остаётся доступной, даже если сайт временно не отвечает.</p>
+        {% if has_monitors %}
+        <p class="empty-kicker">{% translate "Price tracking" %}</p>
+        <h3>{% translate "Your monitors and price history" %}</h3>
+        <p class="empty-description">{% translate "Open your monitors to review prices, history and check results." %}</p>
+        {% else %}
+        <p class="empty-kicker">{% translate "Getting started" %}</p>
+        <h3>{% translate "Start with your first observation" %}</h3>
+        <p class="empty-description">{% translate "Save a product URL, start a check and view the results. History remains available even when the site is temporarily unavailable." %}</p>
+        {% endif %}
         <div class="monitor-actions mt-4">
-          <a class="btn btn-primary" href="{% url 'monitoring:create' %}">Добавить мониторинг</a>
-          <a class="btn btn-outline-secondary" href="{% url 'monitoring:list' %}">Мои мониторинги</a>
+          {% if has_monitors %}
+          <a class="btn btn-primary" href="{% url 'monitoring:list' %}">{% translate "My monitors" %}</a>
+          <a class="btn btn-outline-secondary" href="{% url 'monitoring:create' %}">{% translate "Add monitor" %}</a>
+          {% else %}
+          <a class="btn btn-primary" href="{% url 'monitoring:create' %}">{% translate "Add monitor" %}</a>
+          <a class="btn btn-outline-secondary" href="{% url 'monitoring:list' %}">{% translate "My monitors" %}</a>
+          {% endif %}
         </div>
       </div>
       <div class="workspace-card-footer">
         <span class="footer-info-icon" aria-hidden="true">i</span>
-        <p>Доступ к кабинету есть только у вас. Новые учётные записи создаёт администратор.</p>
+        <p>{% translate "Your workspace is private. New accounts are created by the administrator." %}</p>
       </div>
     </section>
-    <p class="dashboard-footnote">Проверяйте товары вручную или по расписанию. Загрузка выполняется в фоне.</p>
+    <p class="dashboard-footnote">{% translate "Check products manually or on a schedule. Loading runs in the background." %}</p>
   </div>
 {% endblock %}

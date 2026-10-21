@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.utils.translation import gettext as _
 
 from .forms import EmailPreferencesForm
 from .models import Notification
@@ -55,6 +56,6 @@ def email_preferences(request):
             get_user_model().objects.filter(pk=request.user.pk).update(**form.cleaned_data)
             if not form.cleaned_data["email_notifications_enabled"]:
                 Notification.objects.filter(owner=request.user, email_status="pending").update(email_status="cancelled", next_email_at=None)
-        messages.success(request, "Настройки email сохранены. Старые уведомления повторно не отправляются.")
+        messages.success(request, _("Email preferences have been saved. Previous notifications will not be resent."))
         return redirect("notifications:settings")
     return render(request, "notifications/settings.html", {"form": form})

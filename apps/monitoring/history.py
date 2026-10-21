@@ -2,6 +2,7 @@
 
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from . import analytics
 from .forms import HistoryFilterForm
@@ -20,7 +21,7 @@ def history_filters(monitors, query, *, require_currency=True):
         return context
     currency = form.cleaned_data["currency"]
     if require_currency and currencies and not currency:
-        form.add_error("currency", "Выберите одну валюту из истории; конвертация не выполняется.")
+        form.add_error("currency", _("Select one currency from the history; currencies are not converted."))
         return context
     context.update(history_window=analytics.history_window(form.cleaned_data, now=now), currency=currency)
     return context

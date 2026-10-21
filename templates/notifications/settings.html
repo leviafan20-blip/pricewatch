@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Настройки email — PriceWatch{% endblock %}
+{% load i18n %}
+{% block title %}{% translate "Email preferences — PriceWatch" %}{% endblock %}
 {% block content %}
-<div class="container page-container dashboard-layout"><a class="back-link" href="{% url 'notifications:list' %}">← К уведомлениям</a><div class="dashboard-heading"><div><p class="eyebrow">Личные настройки</p><h1>Email-уведомления</h1><p class="page-description">Этот переключатель действует для всех ваших мониторингов.</p></div></div>
+<div class="container page-container dashboard-layout"><a class="back-link" href="{% url 'notifications:list' %}">{% translate "← Back to notifications" %}</a><div class="dashboard-heading"><div><p class="eyebrow">{% translate "Personal preferences" %}</p><h1>{% translate "Email notifications" %}</h1><p class="page-description">{% translate "This preference applies to all your monitors." %}</p></div></div>
 <form method="post" class="workspace-card monitor-form" novalidate>{% csrf_token %}
   {% include 'monitoring/_field.html' with field=form.email %}
   <div class="form-check">{{ form.email_notifications_enabled }}<label class="form-check-label" for="{{ form.email_notifications_enabled.id_for_label }}">{{ form.email_notifications_enabled.label }}</label></div>
-  <p class="form-text mt-3">Нужны включённое правило мониторинга и новое подходящее изменение цены. Старые уведомления при включении не рассылаются. Уже начатую отправку остановить нельзя.</p>
-  <button class="btn btn-primary mt-3" type="submit">Сохранить настройки</button>
+  <p class="form-text mt-3">{% translate "A monitor rule must be enabled and a new matching price change must occur. Enabling email does not send previous notifications. A send already in progress cannot be stopped." %}</p>
+  <button class="btn btn-primary mt-3" type="submit">{% translate "Save preferences" %}</button>
 </form></div>
 {% endblock %}

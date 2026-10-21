@@ -28,6 +28,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "apps.core.middleware.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -77,7 +78,12 @@ LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "core:dashboard"
 LOGOUT_REDIRECT_URL = "accounts:login"
 
-LANGUAGE_CODE = "ru"
+LANGUAGE_CODE = "en"
+LANGUAGES = [("en", "English"), ("ru", "Русский")]
+LOCALE_PATHS = [BASE_DIR / "locale"]
+# Django's language cookie persists across browser sessions (one year).
+LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60
+LANGUAGE_COOKIE_SAMESITE = "Lax"
 TIME_ZONE = "Asia/Yekaterinburg"
 USE_I18N = True
 USE_TZ = True
